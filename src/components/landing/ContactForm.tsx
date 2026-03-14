@@ -80,7 +80,10 @@ export function ContactForm() {
               </a>
               */}
 
-              <div className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border">
+              <a
+                href="mailto:amriteshanshu1234@gmail.com"
+                className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors group"
+              >
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                   <EnvelopeSimple
                     weight="fill"
@@ -88,14 +91,14 @@ export function ContactForm() {
                   />
                 </div>
                 <div>
-                  <div className="font-semibold text-sm">
+                  <div className="font-semibold text-sm group-hover:text-primary transition-colors">
                     amriteshanshu1234@gmail.com
                   </div>
                   <div className="text-xs text-muted-foreground">
                     We respond within 24 hours
                   </div>
                 </div>
-              </div>
+              </a>
             </div>
 
             {/* SaaS / Commerce framings */}
@@ -124,9 +127,7 @@ export function ContactForm() {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="bg-card border border-border rounded-2xl p-6 md:p-8">
-              <CalEmbed />
-            </div>
+            <CalEmbed />
           </motion.div>
         </div>
       </div>
