@@ -138,7 +138,7 @@ export function HowItWorks() {
 
                   {/* Center Icon Node */}
                   <div
-                    className={`absolute left-0 sm:left-4 md:left-1/2 top-0 md:top-1/2 -translate-x-1/2 md:-translate-y-1/2 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border ${step.borderColor} ${step.bgColor} backdrop-blur-md flex items-center justify-center z-10 shadow-lg`}
+                    className={`absolute left-4 sm:left-4 md:left-1/2 top-0 md:top-1/2 -translate-x-1/2 md:-translate-y-1/2 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border ${step.borderColor} ${step.bgColor} backdrop-blur-md flex items-center justify-center z-10 shadow-lg`}
                   >
                     <step.icon
                       weight="duotone"
