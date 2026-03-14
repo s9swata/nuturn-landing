@@ -110,7 +110,7 @@ export function HowItWorks() {
 
                   {/* Left Side */}
                   <div
-                    className={`w-full md:w-1/2 ${isEven ? "md:pr-16 md:text-right" : "md:order-2 md:pl-16 md:text-left"} flex flex-col pl-20 sm:pl-24 md:pl-0`}
+                    className={`w-full md:w-1/2 ${isEven ? "md:pr-16 md:text-right" : "md:order-2 md:pl-16 md:text-left"} flex flex-col pl-10 sm:pl-20 md:pl-0`}
                   >
                     <div
                       className={`hidden md:flex flex-col ${isEven ? "items-end" : "items-start"} mb-4`}
