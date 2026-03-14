@@ -3,9 +3,7 @@
 import { motion } from "framer-motion";
 import {
   Accordion,
-  AccordionContent,
   AccordionItem,
-  AccordionTrigger,
 } from "@/components/ui/accordion";
 
 const faqs = [
@@ -83,14 +81,12 @@ export function ObjectionCrusher() {
                 <AccordionItem
                   key={index}
                   value={`item-${index}`}
-                  className="bg-card/30 border border-border/50 rounded-2xl px-6 data-[state=open]:bg-card/80 data-[state=open]:border-primary/30 transition-all duration-300"
+                  title={faq.question}
+                  className="bg-card/30 border border-border/50 rounded-2xl px-6 transition-all duration-300"
                 >
-                  <AccordionTrigger className="text-left text-lg font-semibold hover:no-underline py-6 [&[data-state=open]>svg]:text-primary">
-                    {faq.question}
-                  </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground leading-relaxed pb-6 text-base">
+                  <p className="text-muted-foreground leading-relaxed">
                     {faq.answer}
-                  </AccordionContent>
+                  </p>
                 </AccordionItem>
               ))}
             </Accordion>
@@ -98,8 +94,8 @@ export function ObjectionCrusher() {
         </div>
       </div>
 
-      {/* Decorative background blur */}
-      <div className="absolute bottom-0 right-0 w-1/3 h-1/3 bg-primary/5 blur-[120px] rounded-full -z-10 pointer-events-none" />
+      {/* Background decoration */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-1/2 bg-primary/5 blur-[120px] rounded-full -z-10 pointer-events-none" />
     </section>
   );
 }
