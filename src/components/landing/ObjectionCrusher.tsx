@@ -82,7 +82,7 @@ export function ObjectionCrusher() {
                   key={index}
                   value={`item-${index}`}
                   title={faq.question}
-                  className="bg-card/30 border border-border/50 rounded-2xl px-6 transition-all duration-300"
+                  className="bg-card/30 border border-border rounded-2xl px-6 transition-all duration-300"
                 >
                   <p className="text-muted-foreground leading-relaxed">
                     {faq.answer}

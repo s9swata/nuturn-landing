@@ -99,7 +99,7 @@ export function Benefits() {
             <motion.div
               key={benefit.number}
               variants={cardVariants}
-              className="relative group bg-card border border-border/50 rounded-2xl p-6 md:p-8 hover:border-primary/30 transition-colors duration-300 overflow-hidden"
+              className="relative group bg-card border border-border rounded-2xl p-6 md:p-8 hover:border-primary/50 transition-colors duration-300 overflow-hidden"
             >
               {/* Number badge */}
               <span className="absolute top-6 right-6 text-5xl font-black text-muted/10 select-none pointer-events-none">

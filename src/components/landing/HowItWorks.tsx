@@ -17,7 +17,7 @@ const steps = [
       "We map your funnel, understand your users, and align on the architecture that serves your business.",
     color: "text-primary",
     bgColor: "bg-primary/20",
-    borderColor: "border-primary/30",
+    borderColor: "border-primary/50",
   },
   {
     icon: CodeBlock,
@@ -27,7 +27,7 @@ const steps = [
       "We show you the roadmap before we write code. You see exactly what's building, and you get checkpoints to pivot if needed.",
     color: "text-secondary",
     bgColor: "bg-secondary/20",
-    borderColor: "border-secondary/30",
+    borderColor: "border-secondary/50",
   },
   {
     icon: RocketLaunch,
@@ -37,7 +37,7 @@ const steps = [
       "Full-stack development using modern, scalable tech. We handle hosting, domains, payment setup, and all production details.",
     color: "text-emerald-500",
     bgColor: "bg-emerald-500/20",
-    borderColor: "border-emerald-500/30",
+    borderColor: "border-emerald-500/50",
   },
   {
     icon: ChartLineUp,
@@ -47,7 +47,7 @@ const steps = [
       "Deploy with confidence. We train your team, monitor early metrics, and optimize for conversions in the first 30 days.",
     color: "text-amber-500",
     bgColor: "bg-amber-500/20",
-    borderColor: "border-amber-500/30",
+    borderColor: "border-amber-500/50",
   },
 ];
 
@@ -80,7 +80,7 @@ export function HowItWorks() {
 
         <div className="max-w-4xl mx-auto relative">
           {/* Glowing Vertical Timeline Line */}
-          <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-px bg-border/50 -translate-x-1/2 hidden sm:block">
+          <div className="absolute left-4 sm:left-8 md:left-1/2 top-0 bottom-0 w-px bg-border -translate-x-1/2 hidden sm:block">
             <motion.div
               className="absolute top-0 left-0 w-full bg-gradient-to-b from-primary via-secondary to-amber-500 shadow-[0_0_15px_rgba(109,40,217,0.5)]"
               initial={{ height: 0 }}
@@ -97,7 +97,7 @@ export function HowItWorks() {
               return (
                 <motion.div
                   key={index}
-                  className="relative flex flex-col md:flex-row items-start md:items-center gap-8 md:gap-0"
+                  className="relative flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-0"
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-100px" }}
@@ -110,7 +110,7 @@ export function HowItWorks() {
 
                   {/* Left Side */}
                   <div
-                    className={`w-full md:w-1/2 ${isEven ? "md:pr-16 md:text-right" : "md:order-2 md:pl-16 md:text-left"} flex flex-col sm:pl-20 md:pl-0`}
+                    className={`w-full md:w-1/2 ${isEven ? "md:pr-16 md:text-right" : "md:order-2 md:pl-16 md:text-left"} flex flex-col pl-10 sm:pl-20 md:pl-0`}
                   >
                     <div
                       className={`hidden md:flex flex-col ${isEven ? "items-end" : "items-start"} mb-4`}
@@ -138,11 +138,11 @@ export function HowItWorks() {
 
                   {/* Center Icon Node */}
                   <div
-                    className={`absolute left-0 sm:left-8 md:left-1/2 top-0 md:top-1/2 -translate-x-1/2 md:-translate-y-1/2 w-16 h-16 rounded-2xl border ${step.borderColor} ${step.bgColor} backdrop-blur-md flex items-center justify-center z-10 shadow-lg`}
+                    className={`absolute left-0 sm:left-4 md:left-1/2 top-0 md:top-1/2 -translate-x-1/2 md:-translate-y-1/2 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border ${step.borderColor} ${step.bgColor} backdrop-blur-md flex items-center justify-center z-10 shadow-lg`}
                   >
                     <step.icon
                       weight="duotone"
-                      className={`w-8 h-8 ${step.color}`}
+                      className={`w-7 h-7 sm:w-8 sm:h-8 ${step.color}`}
                     />
                   </div>
 

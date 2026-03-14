@@ -14,7 +14,7 @@ function AccordionItem({ value, title, children, className }: AccordionItemProps
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className={cn("border-b border-border/50", className)}>
+    <div className={cn("border-b border-border", className)}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}

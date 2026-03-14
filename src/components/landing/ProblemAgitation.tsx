@@ -74,7 +74,7 @@ export function ProblemAgitation() {
             <motion.div
               key={index}
               variants={itemVariants}
-              className="bg-card/30 border border-border/50 p-8 rounded-2xl hover:bg-card/50 transition-colors"
+              className="bg-card/30 border border-border p-8 rounded-2xl hover:bg-card/50 transition-colors"
             >
               <div className="w-12 h-12 bg-destructive/10 rounded-lg flex items-center justify-center mb-6 text-destructive">
                 <point.icon weight="duotone" className="w-6 h-6" />

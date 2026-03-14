@@ -38,7 +38,7 @@ export function ContactForm() {
                 href="https://wa.me/918603538436"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border/50 hover:border-primary/30 transition-colors group"
+                className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors group"
               >
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
                   <WhatsappLogo
@@ -61,7 +61,7 @@ export function ContactForm() {
                 href="https://instagram.com/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border/50 hover:border-primary/30 transition-colors group"
+                className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors group"
               >
                 <div className="w-10 h-10 rounded-xl bg-pink-500/10 flex items-center justify-center">
                   <InstagramLogo
@@ -80,7 +80,7 @@ export function ContactForm() {
               </a>
               */}
 
-              <div className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border/50">
+              <div className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border">
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                   <EnvelopeSimple
                     weight="fill"
@@ -124,7 +124,7 @@ export function ContactForm() {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="bg-card border border-border/50 rounded-2xl p-6 md:p-8">
+            <div className="bg-card border border-border rounded-2xl p-6 md:p-8">
               <CalEmbed />
             </div>
           </motion.div>

@@ -136,7 +136,7 @@ export function Pricing() {
               className={`relative flex flex-col bg-card border rounded-2xl p-6 md:p-8 transition-colors duration-300 ${
                 tier.highlighted
                   ? "border-primary/50 bg-primary/5 hover:border-primary/70"
-                  : "border-border/50 hover:border-primary/30"
+                  : "border-border hover:border-primary/50"
               }`}
             >
               {/* Badge */}

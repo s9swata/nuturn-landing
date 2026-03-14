@@ -104,7 +104,7 @@ export function AudienceFit() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
           {/* SaaS Track */}
           <motion.div
-            className="relative rounded-2xl border border-border/50 bg-card/30 p-1 md:p-2"
+            className="relative rounded-2xl border border-border bg-card/30 p-1 md:p-2"
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
@@ -157,7 +157,7 @@ export function AudienceFit() {
 
           {/* Commerce Track */}
           <motion.div
-            className="relative rounded-2xl border border-border/50 bg-card/30 p-1 md:p-2"
+            className="relative rounded-2xl border border-border bg-card/30 p-1 md:p-2"
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"

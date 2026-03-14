@@ -34,7 +34,7 @@ export function FinalCta() {
               </p>
 
               <div className="grid sm:grid-cols-2 gap-4 mb-10 w-full max-w-lg mx-auto text-left">
-                <div className="flex items-center gap-3 bg-background/50 p-4 rounded-xl border border-border/50">
+                <div className="flex items-center gap-3 bg-background/50 p-4 rounded-xl border border-border">
                   <CheckCircle
                     weight="fill"
                     className="text-primary w-6 h-6 flex-shrink-0"
@@ -44,7 +44,7 @@ export function FinalCta() {
                     100% Transparent Pricing
                   </span>
                 </div>
-                <div className="flex items-center gap-3 bg-background/50 p-4 rounded-xl border border-border/50">
+                <div className="flex items-center gap-3 bg-background/50 p-4 rounded-xl border border-border">
                   <ShieldCheck
                     weight="fill"
                     className="text-emerald-500 w-6 h-6 flex-shrink-0"

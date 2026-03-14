@@ -25,7 +25,7 @@ export function Navbar() {
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? "bg-background/80 backdrop-blur-xl border-b border-border/50 shadow-sm"
+          ? "bg-background/80 backdrop-blur-xl border-b border-border shadow-sm"
           : "bg-transparent"
       }`}
     >
@@ -54,8 +54,8 @@ export function Navbar() {
         {/* Desktop CTA */}
         <div className="hidden md:block">
           <Button
-            size="sm"
-            className="bg-primary hover:bg-primary/90 text-primary-foreground px-4"
+            size="lg"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground px-5"
           >
             <a href="https://cal.com/saswata-biswas-dfnuvi/client-call">Book a Call</a>
           </Button>
@@ -83,7 +83,7 @@ export function Navbar() {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="md:hidden overflow-hidden bg-background/95 backdrop-blur-xl border-b border-border/50"
+            className="md:hidden overflow-hidden bg-background/95 backdrop-blur-xl border-b border-border"
           >
             <div className="container mx-auto px-4 py-6 flex flex-col gap-4">
               {navLinks.map((link) => (

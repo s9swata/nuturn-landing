@@ -91,7 +91,7 @@ export function SolutionShowcase() {
             <motion.div
               key={index}
               variants={cardVariants}
-              className="relative group p-8 rounded-3xl bg-card border border-border/50 hover:border-primary/50 transition-colors duration-300 overflow-hidden"
+              className="relative group p-8 rounded-3xl bg-card border border-border hover:border-primary/50 transition-colors duration-300 overflow-hidden"
             >
               <div
                 className={`absolute inset-0 ${feature.bgColor} opacity-0 group-hover:opacity-10 transition-opacity duration-500`}
@@ -118,7 +118,7 @@ export function SolutionShowcase() {
           transition={{ duration: 0.6, delay: 0.3 }}
         >
           {/* SaaS Track */}
-          <div className="p-6 md:p-8 rounded-2xl bg-card border border-border/50 hover:border-secondary/30 transition-colors">
+          <div className="p-6 md:p-8 rounded-2xl bg-card border border-border hover:border-secondary/50 transition-colors">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center">
                 <Code weight="duotone" className="w-5 h-5 text-secondary" />
@@ -133,7 +133,7 @@ export function SolutionShowcase() {
           </div>
 
           {/* Commerce Track */}
-          <div className="p-6 md:p-8 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-colors">
+          <div className="p-6 md:p-8 rounded-2xl bg-card border border-border hover:border-primary/50 transition-colors">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                 <ShoppingBag
