@@ -106,40 +106,47 @@ export default function ScrolltellingCanvas() {
 
       // 3.1 Draw frame
       const frameIndex = Math.min(ANIMATION_FRAMES - 1, Math.floor(scrollFraction * ANIMATION_FRAMES));
+      
+      // Log current frame for manual tracking
+      console.log(`Current Frame: ${frameIndex}`);
+
       if (frameIndex !== currentFrameIndex) {
         currentFrameIndex = frameIndex;
         cancelAnimationFrame(animationFrameId);
         animationFrameId = requestAnimationFrame(() => drawFrame(frameIndex));
       }
 
-      // 3.2 Animate text overlays using GSAP QuickSetter or direct styling
-      // At scrollFraction = 0.5, we should be significantly separated
-      const moveOutPower = scrollFraction * 200; // moves elements outwards by up to 200vw
-      const fadeOutPower = 1 - (scrollFraction * 2); // fades out by halfway down
+      // 3.2 Dynamic Zoom-In for Text Overlays
+      const uniformScale = 1 + scrollFraction * 5;
+      const sideScale = 1 + scrollFraction * 2; // Reduced 2x scale for side text as requested
+      const fadeOutPower = 1 - (scrollFraction * 2.5); // Accelerated fade out
 
       if (leftTextRef.current) {
-        gsap.set(leftTextRef.current, { 
-          x: -moveOutPower + 'vw',
-          opacity: fadeOutPower
+        gsap.set(leftTextRef.current, {
+          scale: sideScale,
+          opacity: Math.max(0, fadeOutPower),
+          transformOrigin: "center center"
         });
       }
       if (rightTextRef.current) {
-        gsap.set(rightTextRef.current, { 
-          x: moveOutPower + 'vw',
-          opacity: fadeOutPower
+        gsap.set(rightTextRef.current, {
+          scale: sideScale,
+          opacity: Math.max(0, fadeOutPower),
+          transformOrigin: "center center"
         });
       }
       if (bottomRef.current) {
         gsap.set(bottomRef.current, {
-          y: moveOutPower + 'vh',
-          opacity: fadeOutPower
+          scale: uniformScale,
+          opacity: Math.max(0, fadeOutPower),
+          transformOrigin: "center center"
         });
       }
       if (centerTextRef.current) {
-        // Center text slowly scales up and fades
         gsap.set(centerTextRef.current, {
-          scale: 1 + scrollFraction * 3,
-          opacity: fadeOutPower
+          scale: uniformScale,
+          opacity: Math.max(0, fadeOutPower),
+          transformOrigin: "center center"
         });
       }
     }
@@ -216,7 +223,7 @@ export default function ScrolltellingCanvas() {
       {/* Text Overlays - Only visible when loaded */}
       {isLoaded && (
         <div className="fixed inset-0 z-20 pointer-events-none flex flex-col justify-between p-8 md:p-12 text-white">
-          
+
           {/* TOP NAV */}
           <header className="flex justify-between items-start text-sm tracking-wider uppercase font-sans font-medium pointer-events-auto">
             <nav className="flex gap-8">
@@ -226,35 +233,36 @@ export default function ScrolltellingCanvas() {
               <a href="#" className="hover:text-gray-300 transition-colors">Contact</a>
             </nav>
             <div className="hidden sm:flex gap-8 text-right">
-              <span>+1 234 567 8900</span>
               <a href="mailto:hello@nuturnstudio.com" className="hover:text-gray-300 transition-colors">hello@nuturnstudio.com</a>
             </div>
           </header>
 
-          {/* LARGE CENTER TEXT OVERLAY */}
-          <div className="absolute inset-x-8 top-1/2 -translate-y-1/2 flex justify-between items-center z-20 pointer-events-none">
-            {/* Left side text */}
-            <h1 
-              ref={leftTextRef} 
-              className="text-[10vw] leading-[0.9] tracking-tighter drop-shadow-2xl"
+          {/* LARGE SIDE TEXT OVERLAYS */}
+          {/* Left side text - Slightly higher */}
+          <div className="absolute left-8 md:left-12 top-[38%] -translate-y-1/2 z-20 pointer-events-none">
+            <h1
+              ref={leftTextRef}
+              className="text-[5vw] leading-[0.8] tracking-tighter drop-shadow-2xl font-expanded font-bold"
             >
-              Creative <br/> Solutions
+              Creative <br /> Solutions
             </h1>
-            
-            {/* Right side text */}
-            <h1 
-              ref={rightTextRef} 
-              className="text-[10vw] leading-[0.9] tracking-tighter text-right drop-shadow-2xl"
+          </div>
+
+          {/* Right side text - Slightly lower */}
+          <div className="absolute right-8 md:right-12 top-[62%] -translate-y-1/2 z-20 pointer-events-none">
+            <h1
+              ref={rightTextRef}
+              className="text-[5vw] leading-[0.8] tracking-tighter text-right drop-shadow-2xl font-expanded font-bold"
             >
-              For SaaS & <br/> Local Biz
+              For SaaS & <br /> Local Biz
             </h1>
           </div>
 
           {/* ABSOLUTE CENTER TEXT (Inside the window visually) */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none">
-            <h2 
+            <h2
               ref={centerTextRef}
-              className="text-4xl md:text-5xl tracking-widest text-white/90 drop-shadow-xl whitespace-nowrap"
+              className="text-lg md:text-xl tracking-[0.6em] uppercase text-white/90 drop-shadow-xl whitespace-nowrap font-expanded font-bold"
             >
               Nuturn Studio
             </h2>
@@ -262,11 +270,11 @@ export default function ScrolltellingCanvas() {
 
           {/* BOTTOM BAR */}
           <footer ref={bottomRef} className="flex justify-between items-end relative pointer-events-auto">
-            
+
             {/* Bottom Left */}
             <div className="max-w-sm">
               <h3 className="text-xl md:text-2xl mb-4 leading-tight">
-                Your vision,<br/>brought to life
+                Your vision,<br />brought to life
               </h3>
               <div className="w-12 h-px bg-white mb-4"></div>
               <p className="text-sm text-gray-200 font-sans leading-relaxed">
@@ -287,7 +295,7 @@ export default function ScrolltellingCanvas() {
               <div className="w-full h-px bg-white/30 mb-4 inline-block max-w-[200px]"></div>
               <div className="flex justify-end gap-16 uppercase">
                 <span className="flex items-center gap-2">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
                   Scroll Down
                 </span>
                 <span>To See Our Work</span>
