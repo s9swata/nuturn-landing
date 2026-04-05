@@ -19,6 +19,7 @@ export default function ScrolltellingCanvas() {
   const rightTextRef = useRef<HTMLDivElement>(null);
   const centerTextRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const blurRef = useRef<HTMLDivElement>(null);
 
   const [loadedFrames, setLoadedFrames] = useState(0);
   const [images, setImages] = useState<HTMLImageElement[]>([]);
@@ -120,8 +121,14 @@ export default function ScrolltellingCanvas() {
       const uniformScale = 1 + scrollFraction * 5;
       const sideScale = 1 + scrollFraction * 2;
 
-      // Side text life-cycle: Direct cut-off at Frame 75
-      const sideOpacity = frameIndex < 85 ? 1 : 0;
+      // Side text life-cycle: Fade out between Frame 90 and 104
+      let sideOpacity = 1;
+      if (frameIndex >= 104) {
+        sideOpacity = 0;
+      } else if (frameIndex >= 90) {
+        sideOpacity = 1 - (frameIndex - 90) / 14; // 14 frames fade duration
+      }
+
       const lateralMove = scrollFraction * 40; // 40vw lateral shift
 
       if (leftTextRef.current) {
@@ -140,6 +147,28 @@ export default function ScrolltellingCanvas() {
           transformOrigin: "center center"
         });
       }
+
+      // Center Branding Logic ("Nuturn Studio")
+      // Steady until frame 104, then glides to top-center (navbar level) by frame 157
+      let centerY = 0;
+      let centerScale = 1;
+
+      if (frameIndex > 104) {
+        const linearProgress = Math.min(1, (frameIndex - 104) / (157 - 104));
+        const easedProgress = 1 - Math.pow(1 - linearProgress, 2); // Quad Out easing
+        centerY = -42.5 * easedProgress; // Adjusted per your manual tweak
+        centerScale = 1 - (easedProgress * 0.3); // Slight scale down with easing
+      }
+
+      if (centerTextRef.current) {
+        gsap.set(centerTextRef.current, {
+          y: centerY + 'vh',
+          scale: centerScale,
+          opacity: 1, // Stays visible through the glide
+          transformOrigin: "center center"
+        });
+      }
+
       if (bottomRef.current) {
         gsap.set(bottomRef.current, {
           scale: uniformScale,
@@ -147,12 +176,14 @@ export default function ScrolltellingCanvas() {
           transformOrigin: "center center"
         });
       }
-      if (centerTextRef.current) {
-        gsap.set(centerTextRef.current, {
-          scale: uniformScale,
-          opacity: Math.max(0, 1 - (scrollFraction * 2.5)),
-          transformOrigin: "center center"
-        });
+
+      // Cinematic Peripheral Blur (Starts at frame 139)
+      let blurOpacity = 0;
+      if (frameIndex >= 139) {
+        blurOpacity = Math.min(1, (frameIndex - 139) / (180 - 139));
+      }
+      if (blurRef.current) {
+        gsap.set(blurRef.current, { opacity: blurOpacity });
       }
     }
 
@@ -225,12 +256,25 @@ export default function ScrolltellingCanvas() {
         }}
       />
 
+      {/* Peripheral Blur Layer (Vignette-style) */}
+      <div
+        ref={blurRef}
+        className="fixed inset-0 pointer-events-none opacity-0"
+        style={{
+          zIndex: 15,
+          backdropFilter: "blur(14px)",
+          WebkitBackdropFilter: "blur(14px)",
+          maskImage: "radial-gradient(circle, transparent 30%, black 100%)",
+          WebkitMaskImage: "radial-gradient(circle, transparent 30%, black 100%)",
+        }}
+      />
+
       {/* Text Overlays - Only visible when loaded */}
       {isLoaded && (
         <div className="fixed inset-0 z-20 pointer-events-none flex flex-col justify-between p-8 md:p-12 text-white">
 
           {/* TOP NAV */}
-          <header className="flex justify-between items-start text-sm tracking-wider uppercase font-sans font-medium pointer-events-auto">
+          <header className="flex justify-between items-start text-sm tracking-wider font-expanded pointer-events-auto">
             <nav className="flex gap-8">
               <a href="#" className="hover:text-gray-300 transition-colors">About</a>
               <a href="#" className="hover:text-gray-300 transition-colors">Our Work</a>
@@ -247,7 +291,7 @@ export default function ScrolltellingCanvas() {
           <div className="absolute left-8 md:left-12 top-[38%] -translate-y-1/2 z-20 pointer-events-none">
             <h1
               ref={leftTextRef}
-              className="text-[5vw] leading-[0.8] tracking-tighter drop-shadow-2xl font-expanded font-bold"
+              className="text-[5vw] leading-[0.8] tracking-tight drop-shadow-2xl font-expanded font-bold"
             >
               Creative <br /> Solutions
             </h1>
@@ -257,7 +301,7 @@ export default function ScrolltellingCanvas() {
           <div className="absolute right-8 md:right-12 top-[62%] -translate-y-1/2 z-20 pointer-events-none">
             <h1
               ref={rightTextRef}
-              className="text-[5vw] leading-[0.8] tracking-tighter text-right drop-shadow-2xl font-expanded font-bold"
+              className="text-[5vw] leading-[0.8] tracking-tight text-right drop-shadow-2xl font-expanded font-bold"
             >
               For SaaS & <br /> Local Biz
             </h1>
@@ -267,7 +311,7 @@ export default function ScrolltellingCanvas() {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none">
             <h2
               ref={centerTextRef}
-              className="text-lg md:text-xl tracking-[0.6em] uppercase text-white/90 drop-shadow-xl whitespace-nowrap font-expanded font-bold"
+              className="text-lg md:text-xl tracking-[0.6em] text-white/90 drop-shadow-xl whitespace-nowrap font-expanded font-bold"
             >
               Nuturn Studio
             </h2>
