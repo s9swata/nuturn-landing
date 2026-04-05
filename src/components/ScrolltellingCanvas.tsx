@@ -106,7 +106,7 @@ export default function ScrolltellingCanvas() {
 
       // 3.1 Draw frame
       const frameIndex = Math.min(ANIMATION_FRAMES - 1, Math.floor(scrollFraction * ANIMATION_FRAMES));
-      
+
       // Log current frame for manual tracking
       console.log(`Current Frame: ${frameIndex}`);
 
@@ -118,34 +118,39 @@ export default function ScrolltellingCanvas() {
 
       // 3.2 Dynamic Zoom-In for Text Overlays
       const uniformScale = 1 + scrollFraction * 5;
-      const sideScale = 1 + scrollFraction * 2; // Reduced 2x scale for side text as requested
-      const fadeOutPower = 1 - (scrollFraction * 2.5); // Accelerated fade out
+      const sideScale = 1 + scrollFraction * 2;
+
+      // Side text life-cycle: Direct cut-off at Frame 75
+      const sideOpacity = frameIndex < 85 ? 1 : 0;
+      const lateralMove = scrollFraction * 40; // 40vw lateral shift
 
       if (leftTextRef.current) {
         gsap.set(leftTextRef.current, {
           scale: sideScale,
-          opacity: Math.max(0, fadeOutPower),
+          x: -lateralMove + 'vw',
+          opacity: sideOpacity,
           transformOrigin: "center center"
         });
       }
       if (rightTextRef.current) {
         gsap.set(rightTextRef.current, {
           scale: sideScale,
-          opacity: Math.max(0, fadeOutPower),
+          x: lateralMove + 'vw',
+          opacity: sideOpacity,
           transformOrigin: "center center"
         });
       }
       if (bottomRef.current) {
         gsap.set(bottomRef.current, {
           scale: uniformScale,
-          opacity: Math.max(0, fadeOutPower),
+          opacity: Math.max(0, 1 - (scrollFraction * 2.5)),
           transformOrigin: "center center"
         });
       }
       if (centerTextRef.current) {
         gsap.set(centerTextRef.current, {
           scale: uniformScale,
-          opacity: Math.max(0, fadeOutPower),
+          opacity: Math.max(0, 1 - (scrollFraction * 2.5)),
           transformOrigin: "center center"
         });
       }
