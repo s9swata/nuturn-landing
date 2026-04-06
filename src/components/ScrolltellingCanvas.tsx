@@ -216,7 +216,7 @@ export default function ScrolltellingCanvas() {
         const shipLinearP = Math.min(1, (frameIndex - 114) / (180 - 114));
         const shipEasedP = 1 - Math.pow(1 - shipLinearP, 3); // Cubic Out
         spaceshipY = 80 * (1 - shipEasedP); // Slides up 80vh to 0
-        spaceshipOpacity = shipLinearP;
+        spaceshipOpacity = 1; // Persistent opacity
       }
 
       if (spaceshipRef.current) {
@@ -395,7 +395,7 @@ export default function ScrolltellingCanvas() {
               ref={spaceshipRef}
               src="/images/spaceship.png" 
               alt="Nuturn Spaceship" 
-              className="max-w-lg w-full h-auto drop-shadow-[0_25px_25px_rgba(0,0,0,0.1)] opacity-0"
+              className="max-w-lg w-full h-auto drop-shadow-[0_25px_25px_rgba(0,0,0,0.1)]"
             />
           </div>
 
