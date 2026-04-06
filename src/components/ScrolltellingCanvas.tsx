@@ -23,6 +23,8 @@ export default function ScrolltellingCanvas() {
   const debugRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
   const spaceshipRef = useRef<HTMLImageElement>(null);
+  const ctaTitleRef = useRef<HTMLHeadingElement>(null);
+  const ctaDescRef = useRef<HTMLParagraphElement>(null);
 
   const [loadedFrames, setLoadedFrames] = useState(0);
   const [images, setImages] = useState<HTMLImageElement[]>([]);
@@ -209,21 +211,81 @@ export default function ScrolltellingCanvas() {
       }
 
       // 5. Spaceship Reveal (Starts at frame 114, finishes by 180)
-      let spaceshipY = 100; // Hidden at bottom
-      let spaceshipOpacity = 0;
-
-      if (frameIndex >= 114) {
-        const shipLinearP = Math.min(1, (frameIndex - 114) / (180 - 114));
-        const shipEasedP = 1 - Math.pow(1 - shipLinearP, 3); // Cubic Out
-        spaceshipY = 80 * (1 - shipEasedP); // Slides up 80vh to 0
-        spaceshipOpacity = 1; // Persistent opacity
-      }
-
       if (spaceshipRef.current) {
+        let spaceshipY = 80;
+        let spaceshipOpacity = 0;
+        let spaceshipScale = 1;
+
+        if (frameIndex >= 114) {
+          // Phase A & B: Entrance (114-155)
+          if (frameIndex < 155) {
+            const p = Math.min(1, (frameIndex - 114) / (155 - 114));
+            spaceshipY = 80 - (80 * p); // Slides to 0
+            spaceshipOpacity = p;
+            spaceshipScale = 1;
+          } 
+          // Phase C: The Flyby (155-185)
+          else if (frameIndex < 185) {
+            const p = (frameIndex - 155) / 30;
+            spaceshipY = p * -100; // Flies up out of frame
+            spaceshipScale = 1 + (p * 4.5); // Zooms up to 5.5x
+            spaceshipOpacity = 1;
+          }
+          // Phase D: The Return (185-215)
+          else if (frameIndex < 215) {
+            const p = (frameIndex - 185) / 30;
+            spaceshipY = 100 - (100 * p); // Returns from bottom
+            spaceshipScale = 1; // Settle at scale 1
+            spaceshipOpacity = 1;
+          }
+          // Settled State
+          else {
+            spaceshipY = 0;
+            spaceshipScale = 1;
+            spaceshipOpacity = 1;
+          }
+        }
+
         gsap.set(spaceshipRef.current, {
           y: spaceshipY + 'vh',
+          scale: spaceshipScale,
           opacity: spaceshipOpacity,
           pointerEvents: spaceshipOpacity > 0.8 ? "auto" : "none",
+        });
+      }
+
+      // CTA Text Entrance & Displacement
+      if (ctaTitleRef.current && ctaDescRef.current) {
+        let ctaOpacity = 0;
+        let ctaY = 0;
+
+        if (frameIndex >= 114) {
+          // Entry (114-135)
+          if (frameIndex < 135) {
+            const p = (frameIndex - 114) / 21;
+            ctaOpacity = p;
+            ctaY = 0;
+          }
+          // Hold (135-155)
+          else if (frameIndex < 155) {
+            ctaOpacity = 1;
+            ctaY = 0;
+          }
+          // Flyby Displacement (155-185)
+          else if (frameIndex < 185) {
+            const p = (frameIndex - 155) / 30;
+            ctaOpacity = 1 - p;
+            ctaY = p * 150; // Pushed down
+          }
+          // Settlement (185+)
+          else {
+            ctaOpacity = 0;
+          }
+        }
+
+        gsap.set([ctaTitleRef.current, ctaDescRef.current], {
+          opacity: ctaOpacity,
+          y: ctaY,
         });
       }
 
@@ -390,12 +452,30 @@ export default function ScrolltellingCanvas() {
           </div>
 
           {/* SPACESHIP REVEAL LAYER */}
-          <div className="absolute inset-0 z-30 pointer-events-none flex items-center justify-center p-8">
+          <div className="absolute inset-0 z-30 pointer-events-none flex flex-col items-center justify-center p-8 overflow-hidden">
+            {/* CTA Text Layer (Behind Ship) */}
+            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center gap-2">
+              <h2 
+                ref={ctaTitleRef}
+                className="text-7xl md:text-8xl font-bold tracking-tight opacity-0 will-change-transform leading-none uppercase"
+                style={{ fontFamily: 'var(--font-roc)' }}
+              >
+                Define the Cinematic
+              </h2>
+              <p 
+                ref={ctaDescRef}
+                className="text-xl md:text-2xl font-light tracking-wide opacity-0 will-change-transform"
+                style={{ fontFamily: 'var(--font-roc)' }}
+              >
+                Excellence that moves with you
+              </p>
+            </div>
+
             <img 
               ref={spaceshipRef}
               src="/images/spaceship.png" 
               alt="Nuturn Spaceship" 
-              className="max-w-lg w-full h-auto drop-shadow-[0_25px_25px_rgba(0,0,0,0.1)]"
+              className="max-w-lg w-full h-auto drop-shadow-2xl z-30 relative will-change-transform"
             />
           </div>
 
