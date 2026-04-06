@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useLenis } from "lenis/react";
 import gsap from "gsap";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 
@@ -100,213 +101,198 @@ export default function ScrolltellingCanvas({ onComplete }: ScrolltellingCanvasP
     ctx.drawImage(img, zoomOffsetX, zoomOffsetY, zoomWidth, zoomHeight);
   };
 
-  // 3. Scroll Logic & Text Animation
+  // 3. Scroll Logic & Text Animation — driven by Lenis's smoothed position
+  const currentFrameRef = useRef(-1);
+
+  function processFrame(scrollFraction: number) {
+    if (!isLoaded || !canvasRef.current) return;
+
+    const frameIndex = Math.min(ANIMATION_FRAMES - 1, Math.floor(scrollFraction * ANIMATION_FRAMES));
+
+    // Update debug display
+    if (debugRef.current) {
+      debugRef.current.innerText = `Frame: ${frameIndex} / ${ANIMATION_FRAMES}`;
+    }
+
+    // Skip if frame hasn't changed
+    if (frameIndex === currentFrameRef.current) return;
+    currentFrameRef.current = frameIndex;
+
+    // Fire onComplete once at Frame 185
+    if (frameIndex >= 185 && !completedRef.current) {
+      completedRef.current = true;
+      onComplete?.();
+      return;
+    }
+
+    // ── Canvas draw ──────────────────────────────────────────────────────────
+    drawFrame(frameIndex);
+
+    // ── Side text ────────────────────────────────────────────────────────────
+    const sideScale = 1 + scrollFraction * 2;
+    const uniformScale = 1 + scrollFraction * 5;
+    const lateralMove = scrollFraction * 40;
+
+    let sideOpacity = 1;
+    if (frameIndex >= 104) {
+      sideOpacity = 0;
+    } else if (frameIndex >= 90) {
+      sideOpacity = 1 - (frameIndex - 90) / 14;
+    }
+
+    if (leftTextRef.current) {
+      gsap.set(leftTextRef.current, {
+        scale: sideScale,
+        x: `-${lateralMove}vw`,
+        opacity: sideOpacity,
+        transformOrigin: "center center",
+      });
+    }
+    if (rightTextRef.current) {
+      gsap.set(rightTextRef.current, {
+        scale: sideScale,
+        x: `${lateralMove}vw`,
+        opacity: sideOpacity,
+        transformOrigin: "center center",
+      });
+    }
+
+    // ── White portal ─────────────────────────────────────────────────────────
+    let portalRadius = 0;
+    let portalOpacity = 0;
+    let brandColor = "rgba(255,255,255,0.9)";
+
+    if (frameIndex >= 95) {
+      const linearP = Math.min(1, (frameIndex - 95) / (114 - 95));
+      const logP = Math.log(1 + 9 * linearP) / Math.log(10);
+      const blendedP = linearP * 0.3 + logP * 0.7;
+      const bounceP = gsap.parseEase("back.out(1.7)")(blendedP);
+      portalRadius = bounceP * 150;
+      portalOpacity = linearP;
+      const colorVal = Math.floor(255 * (1 - linearP));
+      brandColor = `rgba(${colorVal},${colorVal},${colorVal},1)`;
+
+      if (headerRef.current) {
+        headerRef.current.querySelectorAll<HTMLElement>("a").forEach(l => (l.style.color = brandColor));
+      }
+    } else if (headerRef.current) {
+      headerRef.current.querySelectorAll<HTMLElement>("a").forEach(l => (l.style.color = ""));
+    }
+
+    if (whitePortalRef.current) {
+      gsap.set(whitePortalRef.current, {
+        clipPath: `circle(${portalRadius}% at 50% 50%)`,
+        opacity: portalOpacity,
+      });
+    }
+
+    // ── Spaceship ─────────────────────────────────────────────────────────────
+    if (spaceshipRef.current) {
+      let spaceshipY = 80;
+      let spaceshipOpacity = 0;
+      let spaceshipScale = 1;
+
+      if (frameIndex >= 114 && frameIndex < 145) {
+        const p = Math.min(1, (frameIndex - 114) / 31);
+        const easedP = 1 - Math.pow(1 - p, 3);
+        spaceshipY = 80 - 80 * easedP;
+        spaceshipOpacity = 1;
+        spaceshipScale = 1.5;
+      } else if (frameIndex >= 145 && frameIndex < 185) {
+        const p = (frameIndex - 145) / 40;
+        spaceshipY = 0;
+        spaceshipScale = 1.5 - p * 0.5;
+        spaceshipOpacity = 1;
+      } else if (frameIndex >= 185) {
+        gsap.set(spaceshipRef.current, { display: "none" });
+      }
+
+      if (frameIndex < 185) {
+        gsap.set(spaceshipRef.current, {
+          display: "block",
+          y: `${spaceshipY}vh`,
+          scale: spaceshipScale,
+          opacity: spaceshipOpacity,
+          pointerEvents: spaceshipOpacity > 0.8 ? "auto" : "none",
+        });
+      }
+    }
+
+    // ── CTA text ──────────────────────────────────────────────────────────────
+    if (ctaTitleRef.current && ctaDescRef.current) {
+      let ctaOpacity = 0;
+      let ctaY = 0;
+
+      if (frameIndex >= 114 && frameIndex < 145) {
+        ctaOpacity = 1;
+      } else if (frameIndex >= 145 && frameIndex < 175) {
+        const p = (frameIndex - 145) / 30;
+        ctaOpacity = 1;
+        ctaY = p * 100;
+      }
+
+      gsap.set([ctaTitleRef.current, ctaDescRef.current], {
+        opacity: ctaOpacity,
+        y: ctaY > 0 ? `${ctaY}vh` : 0,
+      });
+    }
+
+    // ── Center branding glide ─────────────────────────────────────────────────
+    let centerY = 0;
+    let centerScale = 1;
+    if (frameIndex > 104) {
+      const glideP = Math.min(1, (frameIndex - 104) / (113 - 104));
+      const easedGlide = 1 - Math.pow(1 - glideP, 2);
+      centerY = -42.5 * easedGlide;
+      centerScale = 1 - easedGlide * 0.3;
+    }
+    if (centerTextRef.current) {
+      gsap.set(centerTextRef.current, {
+        y: `${centerY}vh`,
+        scale: centerScale,
+        opacity: 1,
+        color: brandColor,
+        transformOrigin: "center center",
+      });
+    }
+
+    // ── Footer ────────────────────────────────────────────────────────────────
+    let footerOpacity = Math.max(0, 1 - scrollFraction * 2.5);
+    if (frameIndex >= 95) {
+      footerOpacity *= 1 - Math.min(1, (frameIndex - 95) / 20);
+    }
+    if (bottomRef.current) {
+      gsap.set(bottomRef.current, {
+        scale: uniformScale,
+        opacity: footerOpacity,
+        transformOrigin: "center center",
+      });
+    }
+  }
+
+  // Drive processFrame from Lenis's smoothed scroll — fires on Lenis's own 60fps RAF loop
+  useLenis(({ progress }) => {
+    processFrame(progress);
+  });
+
+  // Canvas resize handler (independent of scroll)
   useEffect(() => {
-    if (!isLoaded || !canvasRef.current || !containerRef.current) return;
-
+    if (!isLoaded || !canvasRef.current) return;
     const canvas = canvasRef.current;
-
-    // Use a ref to track the last scheduled rAF so we never queue more than one.
-    let rafId: number;
-    let ticking = false;
-    let currentFrameIndex = -1;
-    let latestScrollY = 0;
-
-    function processFrame() {
-      ticking = false;
-      const scrollY = latestScrollY;
-      const maxScroll = document.body.scrollHeight - window.innerHeight || 1;
-      const scrollFraction = Math.max(0, Math.min(1, scrollY / maxScroll));
-      const frameIndex = Math.min(ANIMATION_FRAMES - 1, Math.floor(scrollFraction * ANIMATION_FRAMES));
-
-      // Update debug display
-      if (debugRef.current) {
-        debugRef.current.innerText = `Frame: ${frameIndex} / ${ANIMATION_FRAMES}`;
-      }
-
-      // Skip if frame hasn't changed
-      if (frameIndex === currentFrameIndex) return;
-      currentFrameIndex = frameIndex;
-
-      // Fire onComplete once at Frame 185 — no React state needed
-      if (frameIndex >= 185 && !completedRef.current) {
-        completedRef.current = true;
-        onComplete?.();
-        return; // Canvas unmounts — stop all further work
-      }
-
-      // ── Canvas draw ──────────────────────────────────────────────────────────
-      drawFrame(frameIndex);
-
-      // ── Side text ────────────────────────────────────────────────────────────
-      const sideScale = 1 + scrollFraction * 2;
-      const uniformScale = 1 + scrollFraction * 5;
-      const lateralMove = scrollFraction * 40;
-
-      let sideOpacity = 1;
-      if (frameIndex >= 104) {
-        sideOpacity = 0;
-      } else if (frameIndex >= 90) {
-        sideOpacity = 1 - (frameIndex - 90) / 14;
-      }
-
-      if (leftTextRef.current) {
-        gsap.set(leftTextRef.current, {
-          scale: sideScale,
-          x: `-${lateralMove}vw`,
-          opacity: sideOpacity,
-          transformOrigin: "center center",
-        });
-      }
-      if (rightTextRef.current) {
-        gsap.set(rightTextRef.current, {
-          scale: sideScale,
-          x: `${lateralMove}vw`,
-          opacity: sideOpacity,
-          transformOrigin: "center center",
-        });
-      }
-
-      // ── White portal ─────────────────────────────────────────────────────────
-      let portalRadius = 0;
-      let portalOpacity = 0;
-      let brandColor = "rgba(255,255,255,0.9)";
-
-      if (frameIndex >= 95) {
-        const linearP = Math.min(1, (frameIndex - 95) / (114 - 95));
-        const logP = Math.log(1 + 9 * linearP) / Math.log(10);
-        const blendedP = linearP * 0.3 + logP * 0.7;
-        const bounceP = gsap.parseEase("back.out(1.7)")(blendedP);
-        portalRadius = bounceP * 150;
-        portalOpacity = linearP;
-        const colorVal = Math.floor(255 * (1 - linearP));
-        brandColor = `rgba(${colorVal},${colorVal},${colorVal},1)`;
-
-        if (headerRef.current) {
-          headerRef.current.querySelectorAll<HTMLElement>("a").forEach(l => (l.style.color = brandColor));
-        }
-      } else if (headerRef.current) {
-        headerRef.current.querySelectorAll<HTMLElement>("a").forEach(l => (l.style.color = ""));
-      }
-
-      if (whitePortalRef.current) {
-        gsap.set(whitePortalRef.current, {
-          clipPath: `circle(${portalRadius}% at 50% 50%)`,
-          opacity: portalOpacity,
-        });
-      }
-
-      // ── Spaceship ─────────────────────────────────────────────────────────────
-      if (spaceshipRef.current) {
-        let spaceshipY = 80;
-        let spaceshipOpacity = 0;
-        let spaceshipScale = 1;
-
-        if (frameIndex >= 114 && frameIndex < 145) {
-          const p = Math.min(1, (frameIndex - 114) / 31);
-          const easedP = 1 - Math.pow(1 - p, 3);
-          spaceshipY = 80 - 80 * easedP;
-          spaceshipOpacity = 1;
-          spaceshipScale = 1.5;
-        } else if (frameIndex >= 145 && frameIndex < 185) {
-          const p = (frameIndex - 145) / 40;
-          spaceshipY = 0;
-          spaceshipScale = 1.5 - p * 0.5;
-          spaceshipOpacity = 1;
-        } else if (frameIndex >= 185) {
-          gsap.set(spaceshipRef.current, { display: "none" });
-        }
-
-        if (frameIndex < 185) {
-          gsap.set(spaceshipRef.current, {
-            display: "block",
-            y: `${spaceshipY}vh`,
-            scale: spaceshipScale,
-            opacity: spaceshipOpacity,
-            pointerEvents: spaceshipOpacity > 0.8 ? "auto" : "none",
-          });
-        }
-      }
-
-      // ── CTA text ──────────────────────────────────────────────────────────────
-      if (ctaTitleRef.current && ctaDescRef.current) {
-        let ctaOpacity = 0;
-        let ctaY = 0;
-
-        if (frameIndex >= 114 && frameIndex < 145) {
-          ctaOpacity = 1;
-        } else if (frameIndex >= 145 && frameIndex < 175) {
-          const p = (frameIndex - 145) / 30;
-          ctaOpacity = 1;
-          ctaY = p * 100;
-        }
-        // 175+ stays at ctaOpacity = 0
-
-        gsap.set([ctaTitleRef.current, ctaDescRef.current], {
-          opacity: ctaOpacity,
-          y: ctaY > 0 ? `${ctaY}vh` : 0,
-        });
-      }
-
-      // ── Center branding glide ─────────────────────────────────────────────────
-      let centerY = 0;
-      let centerScale = 1;
-      if (frameIndex > 104) {
-        const glideP = Math.min(1, (frameIndex - 104) / (113 - 104));
-        const easedGlide = 1 - Math.pow(1 - glideP, 2);
-        centerY = -42.5 * easedGlide;
-        centerScale = 1 - easedGlide * 0.3;
-      }
-      if (centerTextRef.current) {
-        gsap.set(centerTextRef.current, {
-          y: `${centerY}vh`,
-          scale: centerScale,
-          opacity: 1,
-          color: brandColor,
-          transformOrigin: "center center",
-        });
-      }
-
-      // ── Footer ────────────────────────────────────────────────────────────────
-      let footerOpacity = Math.max(0, 1 - scrollFraction * 2.5);
-      if (frameIndex >= 95) {
-        footerOpacity *= 1 - Math.min(1, (frameIndex - 95) / 20);
-      }
-      if (bottomRef.current) {
-        gsap.set(bottomRef.current, {
-          scale: uniformScale,
-          opacity: footerOpacity,
-          transformOrigin: "center center",
-        });
-      }
-    }
-
-    function handleScroll() {
-      latestScrollY = window.scrollY;
-      if (!ticking) {
-        ticking = true;
-        rafId = requestAnimationFrame(processFrame);
-      }
-    }
 
     const resizeCanvas = () => {
       canvas.width = window.innerWidth * window.devicePixelRatio;
       canvas.height = window.innerHeight * window.devicePixelRatio;
-      currentFrameIndex = -1;
-      handleScroll();
+      currentFrameRef.current = -1; // force redraw on resize
+      const progress = window.scrollY / (document.body.scrollHeight - window.innerHeight || 1);
+      processFrame(Math.max(0, Math.min(1, progress)));
     };
 
     window.addEventListener("resize", resizeCanvas);
     resizeCanvas();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
+    return () => window.removeEventListener("resize", resizeCanvas);
+  }, [isLoaded]);
 
-    return () => {
-      window.removeEventListener("resize", resizeCanvas);
-      window.removeEventListener("scroll", handleScroll);
-      cancelAnimationFrame(rafId);
-    };
-  }, [images, isLoaded]);
 
   // 4. GSAP Mouse Parallax
   useEffect(() => {
