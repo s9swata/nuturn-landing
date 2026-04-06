@@ -220,22 +220,23 @@ export default function ScrolltellingCanvas() {
           // Phase A & B: Entrance (114-155)
           if (frameIndex < 155) {
             const p = Math.min(1, (frameIndex - 114) / (155 - 114));
-            spaceshipY = 80 - (80 * p); // Slides to 0
+            const easedP = 1 - Math.pow(1 - p, 3); // Cubic Out
+            spaceshipY = 80 - (80 * easedP);
             spaceshipOpacity = p;
             spaceshipScale = 1;
           } 
           // Phase C: The Flyby (155-185)
           else if (frameIndex < 185) {
             const p = (frameIndex - 155) / 30;
-            spaceshipY = p * -100; // Flies up out of frame
-            spaceshipScale = 1 + (p * 4.5); // Zooms up to 5.5x
+            spaceshipY = p * -120; // Flies up out of frame
+            spaceshipScale = 1 + (p * 2); // Max scale 3x
             spaceshipOpacity = 1;
           }
           // Phase D: The Return (185-215)
           else if (frameIndex < 215) {
             const p = (frameIndex - 185) / 30;
-            spaceshipY = 100 - (100 * p); // Returns from bottom
-            spaceshipScale = 1; // Settle at scale 1
+            spaceshipY = -120 * (1 - p); // Returns from top
+            spaceshipScale = 3 - (p * 2); // Scales back from 3x to 1x
             spaceshipOpacity = 1;
           }
           // Settled State
@@ -457,14 +458,14 @@ export default function ScrolltellingCanvas() {
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center gap-2">
               <h2 
                 ref={ctaTitleRef}
-                className="text-7xl md:text-8xl font-bold tracking-tight opacity-0 will-change-transform leading-none uppercase"
+                className="text-7xl md:text-8xl font-bold tracking-tight opacity-0 will-change-transform leading-none uppercase text-black"
                 style={{ fontFamily: 'var(--font-roc)' }}
               >
                 Define the Cinematic
               </h2>
               <p 
                 ref={ctaDescRef}
-                className="text-xl md:text-2xl font-light tracking-wide opacity-0 will-change-transform"
+                className="text-xl md:text-2xl font-light tracking-wide opacity-0 will-change-transform text-black"
                 style={{ fontFamily: 'var(--font-roc)' }}
               >
                 Excellence that moves with you
