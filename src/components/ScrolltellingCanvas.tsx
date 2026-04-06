@@ -19,9 +19,9 @@ export default function ScrolltellingCanvas() {
   const rightTextRef = useRef<HTMLDivElement>(null);
   const centerTextRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const blurRef = useRef<HTMLDivElement>(null);
-  const blackBgRef = useRef<HTMLDivElement>(null);
+  const whitePortalRef = useRef<HTMLDivElement>(null);
   const debugRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
 
   const [loadedFrames, setLoadedFrames] = useState(0);
   const [images, setImages] = useState<HTMLImageElement[]>([]);
@@ -160,26 +160,76 @@ export default function ScrolltellingCanvas() {
       let centerY = 0;
       let centerScale = 1;
 
+      // Blended White Portal Expansion (Starts at frame 95, finishes by 170)
+      let portalRadius = 0;
+      let portalOpacity = 0;
+      let brandColor = "rgba(255, 255, 255, 0.9)"; // text-white/90
+
+      if (frameIndex >= 95) {
+        const linearP = Math.min(1, (frameIndex - 95) / (114 - 95));
+        const logP = Math.log(1 + 9 * linearP) / Math.log(10); // Logarithmic curve
+        
+        // 1. Reduced Easing (30% blend with linear)
+        const blendedP = (linearP * 0.3) + (logP * 0.7);
+        
+        // 2. Bouncy Overshoot (GSAP back easing)
+        const bounceP = gsap.parseEase("back.out(1.7)")(blendedP);
+        portalRadius = bounceP * 150; 
+        
+        // 3. Opacity Transition
+        portalOpacity = linearP; // Fully solid by frame 114
+
+        // 4. Color Transition Logic (White to Black)
+        const colorVal = Math.floor(255 * (1 - linearP));
+        brandColor = `rgba(${colorVal}, ${colorVal}, ${colorVal}, 1)`;
+        
+        // Update all links in the header to match brandColor
+        if (headerRef.current) {
+          const links = headerRef.current.querySelectorAll("a");
+          links.forEach(link => {
+            (link as HTMLElement).style.color = brandColor;
+          });
+        }
+      } else {
+        // Reset navbar links to white when before the portal transition
+        if (headerRef.current) {
+          const links = headerRef.current.querySelectorAll("a");
+          links.forEach(link => {
+            (link as HTMLElement).style.color = ""; // Revert to CSS default (white/inherit)
+          });
+        }
+      }
+
+      if (whitePortalRef.current) {
+        gsap.set(whitePortalRef.current, {
+          clipPath: `circle(${portalRadius}% at 50% 50%)`,
+          opacity: portalOpacity,
+        });
+      }
+
+      // Center Branding Glide Logic
       if (frameIndex > 104) {
-        const linearProgress = Math.min(1, (frameIndex - 104) / (157 - 104));
-        const easedProgress = 1 - Math.pow(1 - linearProgress, 2); // Quad Out easing
-        centerY = -42.5 * easedProgress; // Adjusted per your manual tweak
-        centerScale = 1 - (easedProgress * 0.3); // Slight scale down with easing
+        const glideLinearP = Math.min(1, (frameIndex - 104) / (157 - 104));
+        const easedProgress = 1 - Math.pow(1 - glideLinearP, 2); // Quad Out easing
+        centerY = -42.5 * easedProgress;
+        centerScale = 1 - (easedProgress * 0.3);
       }
 
       if (centerTextRef.current) {
         gsap.set(centerTextRef.current, {
           y: centerY + 'vh',
           scale: centerScale,
-          opacity: 1, // Stays visible through the glide
+          opacity: 1,
+          color: brandColor,
           transformOrigin: "center center"
         });
       }
 
       // Footer Visibility Cleanup
       let footerOpacity = Math.max(0, 1 - (scrollFraction * 2.5));
-      if (frameIndex >= 128) {
-        footerOpacity = 0; // Forced clear for background transition
+      if (frameIndex >= 95) {
+        const transitionP = Math.min(1, (frameIndex - 95) / 20); // Quick fade out as portal starts
+        footerOpacity *= (1 - transitionP);
       }
 
       if (bottomRef.current) {
@@ -188,27 +238,6 @@ export default function ScrolltellingCanvas() {
           opacity: footerOpacity,
           transformOrigin: "center center"
         });
-      }
-
-      // Cinematic Peripheral Blur (Starts at frame 139)
-      // Note: This will be covered by the black background (z-17) after frame 128
-      let blurOpacity = 0;
-      if (frameIndex >= 139) {
-        blurOpacity = Math.min(1, (frameIndex - 139) / (180 - 139));
-      }
-      if (blurRef.current) {
-        gsap.set(blurRef.current, { opacity: blurOpacity });
-      }
-
-      // Snapping Black Solid Background (Starts at frame 128, finishes by 139)
-      let blackBgY = 100; // Start off-screen at bottom
-      if (frameIndex >= 128) {
-        const linearP = Math.min(1, (frameIndex - 128) / (139 - 128));
-        const snapP = 1 - Math.pow(1 - linearP, 4); // Quintic Out "Snap"
-        blackBgY = 100 * (1 - snapP);
-      }
-      if (blackBgRef.current) {
-        gsap.set(blackBgRef.current, { y: blackBgY + '%' });
       }
     }
 
@@ -262,7 +291,7 @@ export default function ScrolltellingCanvas() {
       {/* FRAME DEBUGGER (FIXED TOP-RIGHT) */}
       <div
         ref={debugRef}
-        className="fixed top-4 right-4 z-[999] bg-black/80 text-white font-mono text-[10px] px-2 py-1 rounded border border-white/20 pointer-events-none"
+        className="fixed top-4 right-4 z-999 bg-black/80 text-white font-mono text-[10px] px-2 py-1 rounded border border-white/20 pointer-events-none"
       >
         Frame: 0 / {ANIMATION_FRAMES}
       </div>
@@ -293,24 +322,13 @@ export default function ScrolltellingCanvas() {
         }}
       />
 
-      {/* Peripheral Blur Layer (Vignette-style) */}
-      <div
-        ref={blurRef}
-        className="fixed inset-0 pointer-events-none opacity-0"
-        style={{
-          zIndex: 15,
-          backdropFilter: "blur(14px)",
-          WebkitBackdropFilter: "blur(14px)",
-          maskImage: "radial-gradient(circle, transparent 30%, black 100%)",
-          WebkitMaskImage: "radial-gradient(circle, transparent 30%, black 100%)",
-        }}
-      />
 
-      {/* Snapping Black Solid Background (Rising Curtain) */}
+
+      {/* Snapping White Portal Background (Circular Expansion) */}
       <div
-        ref={blackBgRef}
-        className="fixed inset-0 bg-black translate-y-full"
-        style={{ zIndex: 17 }}
+        ref={whitePortalRef}
+        className="fixed inset-0 bg-white"
+        style={{ zIndex: 17, clipPath: "circle(0% at 50% 50%)" }}
       />
 
       {/* Text Overlays - Only visible when loaded */}
@@ -318,7 +336,7 @@ export default function ScrolltellingCanvas() {
         <div className="fixed inset-0 z-20 pointer-events-none flex flex-col justify-between p-8 md:p-12 text-white">
 
           {/* TOP NAV */}
-          <header className="flex justify-between items-start text-sm tracking-wider font-expanded pointer-events-auto">
+          <header ref={headerRef} className="flex justify-between items-start text-sm tracking-wider font-expanded pointer-events-auto">
             <nav className="flex gap-8">
               <a href="#" className="hover:text-gray-300 transition-colors">About</a>
               <a href="#" className="hover:text-gray-300 transition-colors">Our Work</a>
