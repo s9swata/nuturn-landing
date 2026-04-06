@@ -222,7 +222,7 @@ export default function ScrolltellingCanvas() {
             const p = Math.min(1, (frameIndex - 114) / 21);
             const easedP = 1 - Math.pow(1 - p, 3); // Cubic Out
             spaceshipY = 80 - (80 * easedP);
-            spaceshipOpacity = Math.min(1, (frameIndex - 114) / 10);
+            spaceshipOpacity = 1; // Solid opacity
             spaceshipScale = 1.5; // Fixed Max Scale
           } 
           // Phase B: Scaling Down & Settlement (145-185)
@@ -230,7 +230,7 @@ export default function ScrolltellingCanvas() {
             const p = (frameIndex - 145) / 40;
             spaceshipY = 0; // Stays center
             spaceshipScale = 1.5 - (p * 0.5); // Scales back from 1.5 to 1.0
-            spaceshipOpacity = 1;
+            spaceshipOpacity = 1; // Solid opacity
           }
           // Settled State
           else {
@@ -256,19 +256,18 @@ export default function ScrolltellingCanvas() {
         if (frameIndex >= 114) {
           // Entry & Hold (114-145)
           if (frameIndex < 145) {
-            const p = Math.min(1, (frameIndex - 114) / 21);
-            ctaOpacity = p;
+            ctaOpacity = 1; // Solid opacity
             ctaY = 0;
           }
           // Exit on Zoom Down (145-175)
           else if (frameIndex < 175) {
             const p = (frameIndex - 145) / 30;
-            ctaOpacity = 1 - p;
+            ctaOpacity = 1; // Solid opacity
             ctaY = p * 150; // Pushed down
           }
           // Settlement (175+)
           else {
-            ctaOpacity = 0;
+            ctaOpacity = 0; // Re-hide after off-screen
           }
         }
 
@@ -446,15 +445,15 @@ export default function ScrolltellingCanvas() {
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center gap-2">
               <h2 
                 ref={ctaTitleRef}
-                className="text-7xl md:text-8xl font-bold tracking-tight opacity-0 will-change-transform leading-none uppercase text-black"
-                style={{ fontFamily: 'var(--font-roc)' }}
+                className="text-7xl md:text-8xl font-bold tracking-tight will-change-transform leading-none uppercase text-black"
+                style={{ fontFamily: 'var(--font-roc)', opacity: 0 }}
               >
                 Define the Cinematic
               </h2>
               <p 
                 ref={ctaDescRef}
-                className="text-xl md:text-2xl font-light tracking-wide opacity-0 will-change-transform text-black"
-                style={{ fontFamily: 'var(--font-roc)' }}
+                className="text-xl md:text-2xl font-light tracking-wide will-change-transform text-black"
+                style={{ fontFamily: 'var(--font-roc)', opacity: 0 }}
               >
                 Excellence that moves with you
               </p>
