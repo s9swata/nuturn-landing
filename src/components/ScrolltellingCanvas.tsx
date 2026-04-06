@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
-import ProofGrid from "./scrolltelling/ProofGrid";
 
 gsap.registerPlugin(ScrollToPlugin);
 
@@ -220,9 +219,9 @@ export default function ScrolltellingCanvas() {
         let spaceshipY = 80;
         let spaceshipOpacity = 0;
         let spaceshipScale = 1;
+        let display = "block";
 
         if (frameIndex >= 114) {
-          // Phase A: Arrival & Hold (114-145)
           // Phase A: Arrival & Hold (114-145)
           if (frameIndex < 145) {
             const p = Math.min(1, (frameIndex - 114) / 31);
@@ -238,11 +237,11 @@ export default function ScrolltellingCanvas() {
             spaceshipScale = 1.5 - (p * 0.5); // Scales back from 1.5 to 1.0
             spaceshipOpacity = 1; // Solid opacity
           }
-          // Settled State
+          // Instant Cut (185+)
           else {
             spaceshipY = 0;
-            spaceshipScale = 1;
-            spaceshipOpacity = 1;
+            spaceshipOpacity = 0;
+            display = "none";
           }
         }
 
@@ -250,6 +249,7 @@ export default function ScrolltellingCanvas() {
           y: spaceshipY + 'vh',
           scale: spaceshipScale,
           opacity: spaceshipOpacity,
+          display: display,
           pointerEvents: spaceshipOpacity > 0.8 ? "auto" : "none",
         });
       }
@@ -416,8 +416,6 @@ export default function ScrolltellingCanvas() {
         }}
       />
 
-
-
       {/* Snapping White Portal Background (Circular Expansion) */}
       <div
         ref={whitePortalRef}
@@ -443,7 +441,6 @@ export default function ScrolltellingCanvas() {
           </header>
 
           {/* LARGE SIDE TEXT OVERLAYS */}
-          {/* Left side text - Slightly higher */}
           <div className="absolute left-8 md:left-12 top-[38%] -translate-y-1/2 z-20 pointer-events-none">
             <h1
               ref={leftTextRef}
@@ -453,7 +450,6 @@ export default function ScrolltellingCanvas() {
             </h1>
           </div>
 
-          {/* Right side text - Slightly lower */}
           <div className="absolute right-8 md:right-12 top-[62%] -translate-y-1/2 z-20 pointer-events-none">
             <h1
               ref={rightTextRef}
@@ -465,12 +461,15 @@ export default function ScrolltellingCanvas() {
 
           {/* SPACESHIP REVEAL LAYER */}
           <div className="absolute inset-0 z-30 pointer-events-none flex flex-col items-center justify-center p-8 overflow-hidden">
-            {/* CTA Text Layer (Behind Ship) */}
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center gap-2">
               <h2 
                 ref={ctaTitleRef}
                 className="text-7xl md:text-8xl font-bold tracking-tight will-change-transform leading-none uppercase text-black"
-                style={{ fontFamily: 'var(--font-roc)', opacity: 0 }}
+                style={{ 
+                  fontFamily: 'var(--font-roc)', 
+                  opacity: activeFrame >= 185 ? 0 : 1, 
+                  display: activeFrame >= 185 ? 'none' : 'block'
+                }}
               >
                 Define the Cinematic
               </h2>
@@ -491,63 +490,11 @@ export default function ScrolltellingCanvas() {
             />
           </div>
 
-          {/* FINAL CONTENT LAYER (Revealed post-flyby) */}
-          <div 
-            ref={contentRef} 
-            className="absolute inset-0 z-25 pointer-events-none flex flex-col items-center justify-center px-8 md:px-24 text-black opacity-0"
-          >
-            {/* Vision Header */}
-            <h2 
-              className="text-4xl md:text-5xl font-bold text-center max-w-4xl mb-16 uppercase tracking-tighter leading-tight"
-              style={{ fontFamily: 'var(--font-roc)' }}
-            >
-              Defining Digital. <br /> Architecture that builds your future.
-            </h2>
-            
-            {/* Selected Works Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 w-full max-w-6xl mb-20 md:mb-24">
-              <div className="flex flex-col border-t border-black/10 pt-6">
-                <span className="text-[10px] uppercase tracking-[0.2em] text-black/40 mb-3 font-sans">01 / E-commerce</span>
-                <h3 className="text-lg font-bold uppercase tracking-tight" style={{ fontFamily: 'var(--font-roc)' }}>Luxe Commerce</h3>
-                <p className="text-sm text-black/60 font-sans mt-2">Bespoke Architecture</p>
-              </div>
-              <div className="flex flex-col border-t border-black/10 pt-6">
-                <span className="text-[10px] uppercase tracking-[0.2em] text-black/40 mb-3 font-sans">02 / SaaS</span>
-                <h3 className="text-lg font-bold uppercase tracking-tight" style={{ fontFamily: 'var(--font-roc)' }}>Aether Labs</h3>
-                <p className="text-sm text-black/60 font-sans mt-2">High-Performance Ecosystems</p>
-              </div>
-              <div className="flex flex-col border-t border-black/10 pt-6">
-                <span className="text-[10px] uppercase tracking-[0.2em] text-black/40 mb-3 font-sans">03 / Transformation</span>
-                <h3 className="text-lg font-bold uppercase tracking-tight" style={{ fontFamily: 'var(--font-roc)' }}>City Pulse</h3>
-                <p className="text-sm text-black/60 font-sans mt-2">Business Digital Evolution</p>
-              </div>
-            </div>
-
-            {/* Service Stack */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 w-full max-w-6xl">
-               <div className="space-y-2">
-                 <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-black/30 font-sans">SaaS Engineering</h4>
-                 <p className="text-sm leading-relaxed font-sans text-black/80">Scalable, high-performance architectures for growth-focused software.</p>
-               </div>
-               <div className="space-y-2">
-                 <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-black/30 font-sans">Web Development</h4>
-                 <p className="text-sm leading-relaxed font-sans text-black/80">Precision-engineered sites designed to engage and convert global audiences.</p>
-               </div>
-               <div className="space-y-2">
-                 <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-black/30 font-sans">Business Evolution</h4>
-                 <p className="text-sm leading-relaxed font-sans text-black/80">Bringing traditional local leaders to the forefront of the global digital stage.</p>
-               </div>
-            </div>
-
-            {/* MODULAR SECTIONS - Integrated within the white portal flow */}
-            <div className="w-full mt-24 z-[30]">
-               <ProofGrid frameIndex={activeFrame} scrollFraction={activeProgress} />
-            </div>
-          </div>
-
-          {/* MODULAR SECTIONS - Added here to scroll with the portal */}
-             <ProofGrid frameIndex={activeFrame} scrollFraction={activeProgress} />
-
+          {/* 4. CUSTOM CONTENT AREA (Insertion Point) */}
+          {/* Add your custom layers here to render over the white portal.
+              The region from Frame 190 to 240 is now your 'Clean Slate'.
+              Example: {activeFrame >= 190 && <YourComponent activeFrame={activeFrame} />} */}
+          
           {/* ABSOLUTE CENTER TEXT (Inside the window visually) */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none">
             <h2
@@ -566,7 +513,7 @@ export default function ScrolltellingCanvas() {
               <h3 className="text-xl md:text-2xl mb-4 leading-tight">
                 Your vision,<br />brought to life
               </h3>
-              <div className="w-12 h-px bg-white mb-4"></div>
+              <div className="w-px h-12 bg-white/30 mb-4"></div>
               <p className="text-sm text-gray-200 font-sans leading-relaxed">
                 Every project is designed around your goals, brand, and audience — so you can focus on scaling your business, while we take care of the creative execution.
               </p>
