@@ -25,6 +25,7 @@ export default function ScrolltellingCanvas() {
   const spaceshipRef = useRef<HTMLImageElement>(null);
   const ctaTitleRef = useRef<HTMLHeadingElement>(null);
   const ctaDescRef = useRef<HTMLParagraphElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const [loadedFrames, setLoadedFrames] = useState(0);
   const [images, setImages] = useState<HTMLImageElement[]>([]);
@@ -278,6 +279,24 @@ export default function ScrolltellingCanvas() {
         });
       }
 
+      // 6. Content Reveal Logic (Frame 185-220)
+      if (contentRef.current) {
+        let contentOpacity = 0;
+        let contentY = 60; // Start lower down
+
+        if (frameIndex >= 185) {
+          const p = Math.min(1, (frameIndex - 185) / 30);
+          contentOpacity = p;
+          contentY = 60 - (60 * p); // Rise to 0
+        }
+
+        gsap.set(contentRef.current, {
+          opacity: contentOpacity,
+          y: contentY + 'px',
+          pointerEvents: contentOpacity > 0.8 ? "auto" : "none",
+        });
+      }
+
       // Center Branding Glide Logic
       if (frameIndex > 104) {
         const glideLinearP = Math.min(1, (frameIndex - 104) / (113 - 104));
@@ -466,6 +485,55 @@ export default function ScrolltellingCanvas() {
               alt="Nuturn Spaceship" 
               className="max-w-lg w-full h-auto drop-shadow-2xl z-30 relative will-change-transform"
             />
+          </div>
+
+          {/* FINAL CONTENT LAYER (Revealed post-flyby) */}
+          <div 
+            ref={contentRef} 
+            className="absolute inset-0 z-25 pointer-events-none flex flex-col items-center justify-center px-8 md:px-24 text-black opacity-0"
+          >
+            {/* Vision Header */}
+            <h2 
+              className="text-4xl md:text-5xl font-bold text-center max-w-4xl mb-16 uppercase tracking-tighter leading-tight"
+              style={{ fontFamily: 'var(--font-roc)' }}
+            >
+              Defining Digital. <br /> Architecture that builds your future.
+            </h2>
+            
+            {/* Selected Works Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 w-full max-w-6xl mb-20 md:mb-24">
+              <div className="flex flex-col border-t border-black/10 pt-6">
+                <span className="text-[10px] uppercase tracking-[0.2em] text-black/40 mb-3 font-sans">01 / E-commerce</span>
+                <h3 className="text-lg font-bold uppercase tracking-tight" style={{ fontFamily: 'var(--font-roc)' }}>Luxe Commerce</h3>
+                <p className="text-sm text-black/60 font-sans mt-2">Bespoke Architecture</p>
+              </div>
+              <div className="flex flex-col border-t border-black/10 pt-6">
+                <span className="text-[10px] uppercase tracking-[0.2em] text-black/40 mb-3 font-sans">02 / SaaS</span>
+                <h3 className="text-lg font-bold uppercase tracking-tight" style={{ fontFamily: 'var(--font-roc)' }}>Aether Labs</h3>
+                <p className="text-sm text-black/60 font-sans mt-2">High-Performance Ecosystems</p>
+              </div>
+              <div className="flex flex-col border-t border-black/10 pt-6">
+                <span className="text-[10px] uppercase tracking-[0.2em] text-black/40 mb-3 font-sans">03 / Transformation</span>
+                <h3 className="text-lg font-bold uppercase tracking-tight" style={{ fontFamily: 'var(--font-roc)' }}>City Pulse</h3>
+                <p className="text-sm text-black/60 font-sans mt-2">Business Digital Evolution</p>
+              </div>
+            </div>
+
+            {/* Service Stack */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 w-full max-w-6xl">
+               <div className="space-y-2">
+                 <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-black/30 font-sans">SaaS Engineering</h4>
+                 <p className="text-sm leading-relaxed font-sans text-black/80">Scalable, high-performance architectures for growth-focused software.</p>
+               </div>
+               <div className="space-y-2">
+                 <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-black/30 font-sans">Web Development</h4>
+                 <p className="text-sm leading-relaxed font-sans text-black/80">Precision-engineered sites designed to engage and convert global audiences.</p>
+               </div>
+               <div className="space-y-2">
+                 <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-black/30 font-sans">Business Evolution</h4>
+                 <p className="text-sm leading-relaxed font-sans text-black/80">Bringing traditional local leaders to the forefront of the global digital stage.</p>
+               </div>
+            </div>
           </div>
 
           {/* ABSOLUTE CENTER TEXT (Inside the window visually) */}
