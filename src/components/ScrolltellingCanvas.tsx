@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 
@@ -30,13 +30,10 @@ export default function ScrolltellingCanvas({ onComplete }: ScrolltellingCanvasP
   const spaceshipRef = useRef<HTMLImageElement>(null);
   const ctaTitleRef = useRef<HTMLHeadingElement>(null);
   const ctaDescRef = useRef<HTMLParagraphElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
 
   const [loadedFrames, setLoadedFrames] = useState(0);
   const [images, setImages] = useState<HTMLImageElement[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [activeFrame, setActiveFrame] = useState(0);
-  const [activeProgress, setActiveProgress] = useState(0);
 
   // 1. Preload Images
   useEffect(() => {
@@ -109,113 +106,87 @@ export default function ScrolltellingCanvas({ onComplete }: ScrolltellingCanvasP
 
     const canvas = canvasRef.current;
 
-    let animationFrameId: number;
+    // Use a ref to track the last scheduled rAF so we never queue more than one.
+    let rafId: number;
+    let ticking = false;
     let currentFrameIndex = -1;
+    let latestScrollY = 0;
 
-    function handleScroll() {
-      const scrollY = window.scrollY;
+    function processFrame() {
+      ticking = false;
+      const scrollY = latestScrollY;
       const maxScroll = document.body.scrollHeight - window.innerHeight || 1;
-
-      let scrollFraction = Math.max(0, Math.min(1, scrollY / maxScroll));
-
-      // 3.1 Draw frame
+      const scrollFraction = Math.max(0, Math.min(1, scrollY / maxScroll));
       const frameIndex = Math.min(ANIMATION_FRAMES - 1, Math.floor(scrollFraction * ANIMATION_FRAMES));
 
-      // Log current frame for manual tracking
+      // Update debug display
       if (debugRef.current) {
         debugRef.current.innerText = `Frame: ${frameIndex} / ${ANIMATION_FRAMES}`;
       }
-      console.log(`Current Frame: ${frameIndex}`);
 
+      // Skip if frame hasn't changed
       if (frameIndex === currentFrameIndex) return;
       currentFrameIndex = frameIndex;
-      setActiveFrame(frameIndex);
-      setActiveProgress(scrollFraction);
 
-      // Fire onComplete once when the intro ends at Frame 185
+      // Fire onComplete once at Frame 185 — no React state needed
       if (frameIndex >= 185 && !completedRef.current) {
         completedRef.current = true;
         onComplete?.();
+        return; // Canvas unmounts — stop all further work
       }
-      cancelAnimationFrame(animationFrameId);
-      animationFrameId = requestAnimationFrame(() => drawFrame(frameIndex));
 
-      // 3.2 Dynamic Zoom-In for Text Overlays
-      const uniformScale = 1 + scrollFraction * 5;
+      // ── Canvas draw ──────────────────────────────────────────────────────────
+      drawFrame(frameIndex);
+
+      // ── Side text ────────────────────────────────────────────────────────────
       const sideScale = 1 + scrollFraction * 2;
+      const uniformScale = 1 + scrollFraction * 5;
+      const lateralMove = scrollFraction * 40;
 
-      // Side text life-cycle: Fade out between Frame 90 and 104
       let sideOpacity = 1;
-      if (frameIndex >= 128) {
-        sideOpacity = 0; // Completely hidden as background rises
-      } else if (frameIndex >= 104) {
+      if (frameIndex >= 104) {
         sideOpacity = 0;
       } else if (frameIndex >= 90) {
-        sideOpacity = 1 - (frameIndex - 90) / 14; // 14 frames fade duration
+        sideOpacity = 1 - (frameIndex - 90) / 14;
       }
-
-      const lateralMove = scrollFraction * 40; // 40vw lateral shift
 
       if (leftTextRef.current) {
         gsap.set(leftTextRef.current, {
           scale: sideScale,
-          x: -lateralMove + 'vw',
+          x: `-${lateralMove}vw`,
           opacity: sideOpacity,
-          transformOrigin: "center center"
+          transformOrigin: "center center",
         });
       }
       if (rightTextRef.current) {
         gsap.set(rightTextRef.current, {
           scale: sideScale,
-          x: lateralMove + 'vw',
+          x: `${lateralMove}vw`,
           opacity: sideOpacity,
-          transformOrigin: "center center"
+          transformOrigin: "center center",
         });
       }
 
-      // Center Branding Logic ("Nuturn Studio")
-      // Steady until frame 104, then glides to top-center (navbar level) by frame 157
-      let centerY = 0;
-      let centerScale = 1;
-
-      // Blended White Portal Expansion (Starts at frame 95, finishes by 170)
+      // ── White portal ─────────────────────────────────────────────────────────
       let portalRadius = 0;
       let portalOpacity = 0;
-      let brandColor = "rgba(255, 255, 255, 0.9)"; // text-white/90
+      let brandColor = "rgba(255,255,255,0.9)";
 
       if (frameIndex >= 95) {
         const linearP = Math.min(1, (frameIndex - 95) / (114 - 95));
-        const logP = Math.log(1 + 9 * linearP) / Math.log(10); // Logarithmic curve
-        
-        // 1. Reduced Easing (30% blend with linear)
-        const blendedP = (linearP * 0.3) + (logP * 0.7);
-        
-        // 2. Bouncy Overshoot (GSAP back easing)
+        const logP = Math.log(1 + 9 * linearP) / Math.log(10);
+        const blendedP = linearP * 0.3 + logP * 0.7;
         const bounceP = gsap.parseEase("back.out(1.7)")(blendedP);
-        portalRadius = bounceP * 150; 
-        
-        // 3. Opacity Transition
-        portalOpacity = linearP; // Fully solid by frame 114
-
-        // 4. Color Transition Logic (White to Black)
+        portalRadius = bounceP * 150;
+        portalOpacity = linearP;
         const colorVal = Math.floor(255 * (1 - linearP));
-        brandColor = `rgba(${colorVal}, ${colorVal}, ${colorVal}, 1)`;
-        
-        // Update all links in the header to match brandColor
+        brandColor = `rgba(${colorVal},${colorVal},${colorVal},1)`;
+
         if (headerRef.current) {
-          const links = headerRef.current.querySelectorAll("a");
-          links.forEach(link => {
-            (link as HTMLElement).style.color = brandColor;
-          });
+          headerRef.current.querySelectorAll<HTMLElement>("a").forEach(l => (l.style.color = brandColor));
         }
-      } else {
-        // Reset navbar links to white when before the portal transition
-        if (headerRef.current) {
-          const links = headerRef.current.querySelectorAll("a");
-          links.forEach(link => {
-            (link as HTMLElement).style.color = ""; // Revert to CSS default (white/inherit)
-          });
-        }
+      } else if (headerRef.current) {
+        headerRef.current.querySelectorAll<HTMLElement>("a").forEach(l => (l.style.color = ""));
       }
 
       if (whitePortalRef.current) {
@@ -225,68 +196,51 @@ export default function ScrolltellingCanvas({ onComplete }: ScrolltellingCanvasP
         });
       }
 
-      // 5. Spaceship Reveal (Starts at frame 114, finishes by 180)
+      // ── Spaceship ─────────────────────────────────────────────────────────────
       if (spaceshipRef.current) {
         let spaceshipY = 80;
         let spaceshipOpacity = 0;
         let spaceshipScale = 1;
-        let display = "block";
 
-        if (frameIndex >= 114) {
-          // Phase A: Arrival & Hold (114-145)
-          if (frameIndex < 145) {
-            const p = Math.min(1, (frameIndex - 114) / 31);
-            const easedP = 1 - Math.pow(1 - p, 3); // Cubic Out for smoother finish
-            spaceshipY = 80 - (80 * easedP);
-            spaceshipOpacity = 1; // Solid opacity
-            spaceshipScale = 1.5; // Fixed Max Scale
-          } 
-          // Phase B: Scaling Down & Settlement (145-185)
-          else if (frameIndex < 185) {
-            const p = (frameIndex - 145) / 40;
-            spaceshipY = 0; // Stays center
-            spaceshipScale = 1.5 - (p * 0.5); // Scales back from 1.5 to 1.0
-            spaceshipOpacity = 1; // Solid opacity
-          }
-          // Instant Cut (185+)
-          else {
-            spaceshipY = 0;
-            spaceshipOpacity = 0;
-            display = "none";
-          }
+        if (frameIndex >= 114 && frameIndex < 145) {
+          const p = Math.min(1, (frameIndex - 114) / 31);
+          const easedP = 1 - Math.pow(1 - p, 3);
+          spaceshipY = 80 - 80 * easedP;
+          spaceshipOpacity = 1;
+          spaceshipScale = 1.5;
+        } else if (frameIndex >= 145 && frameIndex < 185) {
+          const p = (frameIndex - 145) / 40;
+          spaceshipY = 0;
+          spaceshipScale = 1.5 - p * 0.5;
+          spaceshipOpacity = 1;
+        } else if (frameIndex >= 185) {
+          gsap.set(spaceshipRef.current, { display: "none" });
         }
 
-        gsap.set(spaceshipRef.current, {
-          y: spaceshipY + 'vh',
-          scale: spaceshipScale,
-          opacity: spaceshipOpacity,
-          display: display,
-          pointerEvents: spaceshipOpacity > 0.8 ? "auto" : "none",
-        });
+        if (frameIndex < 185) {
+          gsap.set(spaceshipRef.current, {
+            display: "block",
+            y: `${spaceshipY}vh`,
+            scale: spaceshipScale,
+            opacity: spaceshipOpacity,
+            pointerEvents: spaceshipOpacity > 0.8 ? "auto" : "none",
+          });
+        }
       }
 
-      // CTA Text Entrance & Displacement
+      // ── CTA text ──────────────────────────────────────────────────────────────
       if (ctaTitleRef.current && ctaDescRef.current) {
         let ctaOpacity = 0;
         let ctaY = 0;
 
-        if (frameIndex >= 114) {
-          // Entry & Hold (114-145)
-          if (frameIndex < 145) {
-            ctaOpacity = 1; // Solid opacity
-            ctaY = 0;
-          }
-          // Exit on Zoom Down (145-175)
-          else if (frameIndex < 175) {
-            const p = (frameIndex - 145) / 30;
-            ctaOpacity = 1; // Solid opacity
-            ctaY = p * 100; // Pushed down 100vh
-          }
-          // Settlement (175+)
-          else {
-            ctaOpacity = 0; // Re-hide after off-screen
-          }
+        if (frameIndex >= 114 && frameIndex < 145) {
+          ctaOpacity = 1;
+        } else if (frameIndex >= 145 && frameIndex < 175) {
+          const p = (frameIndex - 145) / 30;
+          ctaOpacity = 1;
+          ctaY = p * 100;
         }
+        // 175+ stays at ctaOpacity = 0
 
         gsap.set([ctaTitleRef.current, ctaDescRef.current], {
           opacity: ctaOpacity,
@@ -294,76 +248,63 @@ export default function ScrolltellingCanvas({ onComplete }: ScrolltellingCanvasP
         });
       }
 
-      // 6. Content Reveal Logic (Frame 185-220)
-      if (contentRef.current) {
-        let contentOpacity = 0;
-        let contentY = 60; // Start lower down
-
-        if (frameIndex >= 185) {
-          const p = Math.min(1, (frameIndex - 185) / 30);
-          contentOpacity = p;
-          contentY = 60 - (60 * p); // Rise to 0
-        }
-
-        gsap.set(contentRef.current, {
-          opacity: contentOpacity,
-          y: contentY + 'px',
-          pointerEvents: contentOpacity > 0.8 ? "auto" : "none",
-        });
-      }
-
-      // Center Branding Glide Logic
+      // ── Center branding glide ─────────────────────────────────────────────────
+      let centerY = 0;
+      let centerScale = 1;
       if (frameIndex > 104) {
-        const glideLinearP = Math.min(1, (frameIndex - 104) / (113 - 104));
-        const easedProgress = 1 - Math.pow(1 - glideLinearP, 2); // Quad Out easing
-        centerY = -42.5 * easedProgress;
-        centerScale = 1 - (easedProgress * 0.3);
+        const glideP = Math.min(1, (frameIndex - 104) / (113 - 104));
+        const easedGlide = 1 - Math.pow(1 - glideP, 2);
+        centerY = -42.5 * easedGlide;
+        centerScale = 1 - easedGlide * 0.3;
       }
-
       if (centerTextRef.current) {
         gsap.set(centerTextRef.current, {
-          y: centerY + 'vh',
+          y: `${centerY}vh`,
           scale: centerScale,
           opacity: 1,
           color: brandColor,
-          transformOrigin: "center center"
+          transformOrigin: "center center",
         });
       }
 
-      // Footer Visibility Cleanup
-      let footerOpacity = Math.max(0, 1 - (scrollFraction * 2.5));
+      // ── Footer ────────────────────────────────────────────────────────────────
+      let footerOpacity = Math.max(0, 1 - scrollFraction * 2.5);
       if (frameIndex >= 95) {
-        const transitionP = Math.min(1, (frameIndex - 95) / 20); // Quick fade out as portal starts
-        footerOpacity *= (1 - transitionP);
+        footerOpacity *= 1 - Math.min(1, (frameIndex - 95) / 20);
       }
-
       if (bottomRef.current) {
         gsap.set(bottomRef.current, {
           scale: uniformScale,
           opacity: footerOpacity,
-          transformOrigin: "center center"
+          transformOrigin: "center center",
         });
+      }
+    }
+
+    function handleScroll() {
+      latestScrollY = window.scrollY;
+      if (!ticking) {
+        ticking = true;
+        rafId = requestAnimationFrame(processFrame);
       }
     }
 
     const resizeCanvas = () => {
       canvas.width = window.innerWidth * window.devicePixelRatio;
       canvas.height = window.innerHeight * window.devicePixelRatio;
-      currentFrameIndex = -1; // Force redraw on resize
+      currentFrameIndex = -1;
       handleScroll();
     };
 
     window.addEventListener("resize", resizeCanvas);
     resizeCanvas();
-
-    // Assign handleScroll to global so resize can call it
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
 
     return () => {
       window.removeEventListener("resize", resizeCanvas);
       window.removeEventListener("scroll", handleScroll);
-      cancelAnimationFrame(animationFrameId);
+      cancelAnimationFrame(rafId);
     };
   }, [images, isLoaded]);
 
@@ -477,9 +418,8 @@ export default function ScrolltellingCanvas({ onComplete }: ScrolltellingCanvasP
                 ref={ctaTitleRef}
                 className="text-7xl md:text-8xl font-bold tracking-tight will-change-transform leading-none uppercase text-black"
                 style={{ 
-                  fontFamily: 'var(--font-roc)', 
-                  opacity: activeFrame >= 185 ? 0 : 1, 
-                  display: activeFrame >= 185 ? 'none' : 'block'
+                  fontFamily: 'var(--font-roc)',
+                  opacity: 0,
                 }}
               >
                 Define the Cinematic
