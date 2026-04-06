@@ -12,6 +12,7 @@
   --font-mono: var(--font-geist-mono);
   --font-special: var(--font-special-gothic);
   --font-expanded: var(--font-special-expanded);
+  --font-roc: var(--font-roc-grotesk);
 }
 
 @media (prefers-color-scheme: dark) {

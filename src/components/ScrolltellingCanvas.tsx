@@ -20,6 +20,8 @@ export default function ScrolltellingCanvas() {
   const centerTextRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const blurRef = useRef<HTMLDivElement>(null);
+  const blackBgRef = useRef<HTMLDivElement>(null);
+  const debugRef = useRef<HTMLDivElement>(null);
 
   const [loadedFrames, setLoadedFrames] = useState(0);
   const [images, setImages] = useState<HTMLImageElement[]>([]);
@@ -109,6 +111,9 @@ export default function ScrolltellingCanvas() {
       const frameIndex = Math.min(ANIMATION_FRAMES - 1, Math.floor(scrollFraction * ANIMATION_FRAMES));
 
       // Log current frame for manual tracking
+      if (debugRef.current) {
+        debugRef.current.innerText = `Frame: ${frameIndex} / ${ANIMATION_FRAMES}`;
+      }
       console.log(`Current Frame: ${frameIndex}`);
 
       if (frameIndex !== currentFrameIndex) {
@@ -123,7 +128,9 @@ export default function ScrolltellingCanvas() {
 
       // Side text life-cycle: Fade out between Frame 90 and 104
       let sideOpacity = 1;
-      if (frameIndex >= 104) {
+      if (frameIndex >= 128) {
+        sideOpacity = 0; // Completely hidden as background rises
+      } else if (frameIndex >= 104) {
         sideOpacity = 0;
       } else if (frameIndex >= 90) {
         sideOpacity = 1 - (frameIndex - 90) / 14; // 14 frames fade duration
@@ -169,15 +176,22 @@ export default function ScrolltellingCanvas() {
         });
       }
 
+      // Footer Visibility Cleanup
+      let footerOpacity = Math.max(0, 1 - (scrollFraction * 2.5));
+      if (frameIndex >= 128) {
+        footerOpacity = 0; // Forced clear for background transition
+      }
+
       if (bottomRef.current) {
         gsap.set(bottomRef.current, {
           scale: uniformScale,
-          opacity: Math.max(0, 1 - (scrollFraction * 2.5)),
+          opacity: footerOpacity,
           transformOrigin: "center center"
         });
       }
 
       // Cinematic Peripheral Blur (Starts at frame 139)
+      // Note: This will be covered by the black background (z-17) after frame 128
       let blurOpacity = 0;
       if (frameIndex >= 139) {
         blurOpacity = Math.min(1, (frameIndex - 139) / (180 - 139));
@@ -185,11 +199,23 @@ export default function ScrolltellingCanvas() {
       if (blurRef.current) {
         gsap.set(blurRef.current, { opacity: blurOpacity });
       }
+
+      // Snapping Black Solid Background (Starts at frame 128, finishes by 139)
+      let blackBgY = 100; // Start off-screen at bottom
+      if (frameIndex >= 128) {
+        const linearP = Math.min(1, (frameIndex - 128) / (139 - 128));
+        const snapP = 1 - Math.pow(1 - linearP, 4); // Quintic Out "Snap"
+        blackBgY = 100 * (1 - snapP);
+      }
+      if (blackBgRef.current) {
+        gsap.set(blackBgRef.current, { y: blackBgY + '%' });
+      }
     }
 
     const resizeCanvas = () => {
       canvas.width = window.innerWidth * window.devicePixelRatio;
       canvas.height = window.innerHeight * window.devicePixelRatio;
+      currentFrameIndex = -1; // Force redraw on resize
       handleScroll();
     };
 
@@ -217,9 +243,12 @@ export default function ScrolltellingCanvas() {
       const yPos = (clientY / window.innerHeight) - 0.5;
 
       gsap.to(canvasRef.current, {
-        x: xPos * -30,
-        y: yPos * -30,
-        duration: 0.5,
+        x: xPos * -60,
+        y: yPos * -60,
+        rotationY: xPos * 10,
+        rotationX: yPos * -10,
+        transformPerspective: 1200,
+        duration: 0.8,
         ease: "power2.out",
       });
     };
@@ -230,6 +259,14 @@ export default function ScrolltellingCanvas() {
 
   return (
     <div ref={containerRef} className="w-full h-full relative selection:bg-none font-special">
+      {/* FRAME DEBUGGER (FIXED TOP-RIGHT) */}
+      <div
+        ref={debugRef}
+        className="fixed top-4 right-4 z-[999] bg-black/80 text-white font-mono text-[10px] px-2 py-1 rounded border border-white/20 pointer-events-none"
+      >
+        Frame: 0 / {ANIMATION_FRAMES}
+      </div>
+
       {!isLoaded && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black">
           <div className="text-white text-8xl font-light tracking-tighter tabular-nums mb-4">
@@ -242,7 +279,7 @@ export default function ScrolltellingCanvas() {
       {/* Background Canvas */}
       <canvas
         ref={canvasRef}
-        className="fixed inset-0 w-full h-full object-cover scale-[1.05] pointer-events-none"
+        className="fixed inset-0 w-full h-full object-cover scale-[1.1] pointer-events-none"
         style={{ opacity: isLoaded ? 1 : 0, transition: "opacity 1s ease" }}
       />
 
@@ -267,6 +304,13 @@ export default function ScrolltellingCanvas() {
           maskImage: "radial-gradient(circle, transparent 30%, black 100%)",
           WebkitMaskImage: "radial-gradient(circle, transparent 30%, black 100%)",
         }}
+      />
+
+      {/* Snapping Black Solid Background (Rising Curtain) */}
+      <div
+        ref={blackBgRef}
+        className="fixed inset-0 bg-black translate-y-full"
+        style={{ zIndex: 17 }}
       />
 
       {/* Text Overlays - Only visible when loaded */}
@@ -311,7 +355,7 @@ export default function ScrolltellingCanvas() {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none">
             <h2
               ref={centerTextRef}
-              className="text-lg md:text-xl tracking-[0.6em] text-white/90 drop-shadow-xl whitespace-nowrap font-expanded font-bold"
+              className="text-lg md:text-xl tracking-[0.6em] text-white/90 drop-shadow-xl whitespace-nowrap font-roc font-light"
             >
               Nuturn Studio
             </h2>
