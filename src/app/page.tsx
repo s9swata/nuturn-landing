@@ -1,42 +1,50 @@
 "use client";
 
+import { useState } from "react";
 import ScrolltellingCanvas from "@/components/ScrolltellingCanvas";
-import gsap from "gsap";
-import { ScrollToPlugin } from "gsap/ScrollToPlugin";
-
-gsap.registerPlugin(ScrollToPlugin);
 
 export default function Home() {
-  const scrollToTop = () => {
-    gsap.to(window, {
-      scrollTo: 0,
-      duration: 1.5,
-      ease: "power3.inOut",
-    });
-  };
+  const [introDone, setIntroDone] = useState(false);
 
   return (
-    <main className="bg-black text-white relative">
-      {/* 
-        Container with massive height to allow scrolling.
-        500vh = 5 screens tall.
-      */}
-      <div className="h-[500vh] w-full">
-        <ScrolltellingCanvas />
-      </div>
+    <>
+      {/* ─── CINEMATIC INTRO ─── */}
+      {/* Unmounts entirely at Frame 185, freeing all GPU/memory resources. */}
+      {!introDone && (
+        <div className="h-[500vh] w-full bg-black relative">
+          <ScrolltellingCanvas onComplete={() => setIntroDone(true)} />
+        </div>
+      )}
 
-      {/* Optional: Add a call to action or a fixed overlay here if needed */}
-      
-      {/* Scroll to top floating button */}
-      <button 
-        onClick={scrollToTop}
-        className="fixed bottom-8 right-8 z-50 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full w-12 h-12 flex items-center justify-center transition-all duration-300 border border-white/10"
-        aria-label="Scroll to top"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="m18 15-6-6-6 6"/>
-        </svg>
-      </button>
-    </main>
+      {/* ─── YOUR NORMAL WEBSITE ─── */}
+      {/* Mounts after the intro completes. Build freely below. */}
+      {introDone && (
+        <main className="bg-white text-black min-h-screen">
+          {/* ════════════════════════════════════════════════
+              ADD YOUR SECTIONS HERE
+              Examples:
+                <HeroSection />
+                <ServicesSection />
+                <PortfolioSection />
+                <ContactSection />
+              ════════════════════════════════════════════════ */}
+
+          {/* Placeholder — remove once you add your sections */}
+          <div className="flex flex-col items-center justify-center min-h-screen gap-4 text-center px-8">
+            <p className="text-xs uppercase tracking-[0.5em] text-black/30 font-sans">
+              Nuturn Studio
+            </p>
+            <h1 className="text-5xl md:text-8xl font-black uppercase tracking-tighter leading-none">
+              Your Canvas,
+              <br />
+              <span className="text-black/20">Your Rules.</span>
+            </h1>
+            <p className="text-sm text-black/50 font-sans max-w-md mt-4">
+              The cinematic intro has completed. Build your agency sections here in <code>src/app/page.tsx</code>.
+            </p>
+          </div>
+        </main>
+      )}
+    </>
   );
 }

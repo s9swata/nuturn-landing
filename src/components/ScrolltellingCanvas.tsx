@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import gsap from "gsap";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 
@@ -10,9 +10,14 @@ const TOTAL_FRAMES = 240;
 const ANIMATION_FRAMES = 240; // Expand to 240 to reach Phase 2 sections
 const ZOOM_FACTOR = 1.05; // Slight zoom to hide edges
 
-export default function ScrolltellingCanvas() {
+interface ScrolltellingCanvasProps {
+  onComplete?: () => void;
+}
+
+export default function ScrolltellingCanvas({ onComplete }: ScrolltellingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const completedRef = useRef(false);
 
   // Refs for text animation
   const leftTextRef = useRef<HTMLDivElement>(null);
@@ -126,6 +131,12 @@ export default function ScrolltellingCanvas() {
       currentFrameIndex = frameIndex;
       setActiveFrame(frameIndex);
       setActiveProgress(scrollFraction);
+
+      // Fire onComplete once when the intro ends at Frame 185
+      if (frameIndex >= 185 && !completedRef.current) {
+        completedRef.current = true;
+        onComplete?.();
+      }
       cancelAnimationFrame(animationFrameId);
       animationFrameId = requestAnimationFrame(() => drawFrame(frameIndex));
 
