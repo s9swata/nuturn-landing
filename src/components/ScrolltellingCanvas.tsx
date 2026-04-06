@@ -22,6 +22,7 @@ export default function ScrolltellingCanvas() {
   const whitePortalRef = useRef<HTMLDivElement>(null);
   const debugRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const [loadedFrames, setLoadedFrames] = useState(0);
   const [images, setImages] = useState<HTMLImageElement[]>([]);
@@ -207,6 +208,24 @@ export default function ScrolltellingCanvas() {
         });
       }
 
+      // 5. Post-Transition Content Visibility (Starts at frame 114)
+      let contentOpacity = 0;
+      let contentY = 20; // Starts slightly lower
+
+      if (frameIndex >= 114) {
+        const contentP = Math.min(1, (frameIndex - 114) / 16); // 16 frame fade-in till 130
+        contentOpacity = contentP;
+        contentY = 20 * (1 - contentP);
+      }
+
+      if (contentRef.current) {
+        gsap.set(contentRef.current, {
+          opacity: contentOpacity,
+          y: contentY,
+          pointerEvents: contentOpacity > 0.5 ? "auto" : "none", // Enable interaction when visible
+        });
+      }
+
       // Center Branding Glide Logic
       if (frameIndex > 104) {
         const glideLinearP = Math.min(1, (frameIndex - 104) / (157 - 104));
@@ -367,6 +386,33 @@ export default function ScrolltellingCanvas() {
             >
               For SaaS & <br /> Local Biz
             </h1>
+          </div>
+
+          {/* MAIN POST-TRANSITION CONTENT (JSX LAYER) */}
+          <div
+            ref={contentRef}
+            className="absolute inset-0 z-30 opacity-0 pointer-events-none p-8 md:p-12 overflow-y-auto"
+            style={{ paddingTop: "25vh" }} // Give space for the branding header
+          >
+            <div className="max-w-6xl mx-auto">
+              <h3 className="text-4xl md:text-6xl font-bold text-black mb-12 tracking-tight">Our Projects</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="group relative aspect-video bg-zinc-100 rounded-2xl overflow-hidden cursor-pointer">
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                    <div className="absolute bottom-6 left-6 text-black">
+                      <p className="text-xs uppercase tracking-widest font-bold opacity-50 mb-1">Project 0{i}</p>
+                      <h4 className="text-2xl font-bold">Featured Production</h4>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="py-24 text-center">
+                <button className="bg-black text-white px-12 py-4 rounded-full font-bold hover:bg-zinc-800 transition-all">
+                  View Full Portfolio
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* ABSOLUTE CENTER TEXT (Inside the window visually) */}
