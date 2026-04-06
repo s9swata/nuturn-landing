@@ -218,9 +218,10 @@ export default function ScrolltellingCanvas() {
 
         if (frameIndex >= 114) {
           // Phase A: Arrival & Hold (114-145)
+          // Phase A: Arrival & Hold (114-145)
           if (frameIndex < 145) {
-            const p = Math.min(1, (frameIndex - 114) / 21);
-            const easedP = 1 - Math.pow(1 - p, 3); // Cubic Out
+            const p = Math.min(1, (frameIndex - 114) / 31);
+            const easedP = 1 - Math.pow(1 - p, 3); // Cubic Out for smoother finish
             spaceshipY = 80 - (80 * easedP);
             spaceshipOpacity = 1; // Solid opacity
             spaceshipScale = 1.5; // Fixed Max Scale
@@ -263,7 +264,7 @@ export default function ScrolltellingCanvas() {
           else if (frameIndex < 175) {
             const p = (frameIndex - 145) / 30;
             ctaOpacity = 1; // Solid opacity
-            ctaY = p * 150; // Pushed down
+            ctaY = p * 100; // Pushed down 100vh
           }
           // Settlement (175+)
           else {
@@ -273,13 +274,13 @@ export default function ScrolltellingCanvas() {
 
         gsap.set([ctaTitleRef.current, ctaDescRef.current], {
           opacity: ctaOpacity,
-          y: ctaY,
+          y: ctaY > 0 ? `${ctaY}vh` : 0,
         });
       }
 
       // Center Branding Glide Logic
       if (frameIndex > 104) {
-        const glideLinearP = Math.min(1, (frameIndex - 104) / (157 - 104));
+        const glideLinearP = Math.min(1, (frameIndex - 104) / (113 - 104));
         const easedProgress = 1 - Math.pow(1 - glideLinearP, 2); // Quad Out easing
         centerY = -42.5 * easedProgress;
         centerScale = 1 - (easedProgress * 0.3);
