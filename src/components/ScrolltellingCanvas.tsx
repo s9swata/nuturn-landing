@@ -287,17 +287,17 @@ export default function ScrolltellingCanvas() {
     if (!isLoaded || !canvasRef.current) return;
 
     const handleMouseMove = (e: MouseEvent) => {
-      const xMove = (e.clientX / window.innerWidth) - 0.5;
-      const yMove = (e.clientY / window.innerHeight) - 0.5;
+      const { clientX, clientY } = e;
+      const xPos = (clientX / window.innerWidth) - 0.5;
+      const yPos = (clientY / window.innerHeight) - 0.5;
 
-      // Canvas Parallax
       gsap.to(canvasRef.current, {
+        x: xPos * -60,
+        y: yPos * -60,
+        rotationY: xPos * 10,
+        rotationX: yPos * -10,
+        transformPerspective: 1200,
         duration: 0.8,
-        x: xMove * 25,
-        y: yMove * 25,
-        rotationY: xMove * 2,
-        rotationX: -yMove * 2,
-        transformPerspective: 1500,
         ease: "power2.out",
       });
     };
@@ -395,7 +395,7 @@ export default function ScrolltellingCanvas() {
               ref={spaceshipRef}
               src="/images/spaceship.png" 
               alt="Nuturn Spaceship" 
-              className="max-w-lg w-full h-auto drop-shadow-2xl"
+              className="max-w-lg w-full h-auto drop-shadow-[0_25px_25px_rgba(0,0,0,0.1)]"
             />
           </div>
 
