@@ -23,6 +23,7 @@ export default function ScrolltellingCanvas() {
   const debugRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
   const spaceshipRef = useRef<HTMLImageElement>(null);
+  const spaceshipShadowRef = useRef<HTMLDivElement>(null);
 
   const [loadedFrames, setLoadedFrames] = useState(0);
   const [images, setImages] = useState<HTMLImageElement[]>([]);
@@ -227,6 +228,13 @@ export default function ScrolltellingCanvas() {
         });
       }
 
+      if (spaceshipShadowRef.current) {
+        gsap.set(spaceshipShadowRef.current, {
+          y: spaceshipY + 'vh',
+          opacity: spaceshipOpacity * 0.4, // Reduced shadow opacity
+        });
+      }
+
       // Center Branding Glide Logic
       if (frameIndex > 104) {
         const glideLinearP = Math.min(1, (frameIndex - 104) / (157 - 104));
@@ -290,18 +298,26 @@ export default function ScrolltellingCanvas() {
       const xMove = (e.clientX / window.innerWidth) - 0.5;
       const yMove = (e.clientY / window.innerHeight) - 0.5;
 
-      // Spaceship 3D Tilt & Shadow Interaction
-      if (spaceshipRef.current) {
+      // Spaceship 3D Tilt & Hardware-Accelerated Shadow
+      if (spaceshipRef.current && spaceshipShadowRef.current) {
+        // 1. Ship Tilt (GPU Fast)
         gsap.to(spaceshipRef.current, {
           rotationY: xMove * 5,
           rotationX: -yMove * 5,
           transformPerspective: 1000,
-          // Dynamic Layered Shadow: Shifts inversely to tilt for floating depth
-          filter: `
-            drop-shadow(${xMove * -15}px ${yMove * -15 + 25}px 35px rgba(0,0,0,0.15)) 
-            drop-shadow(${xMove * -8}px ${yMove * -8 + 15}px 12px rgba(0,0,0,0.1))
-          `,
+          force3D: true,
           duration: 0.6,
+          ease: "power2.out",
+        });
+
+        // 2. Separate Shadow Layer (GPU Fast)
+        // Moves inversely to tilt: xMove * -20 gives it height
+        gsap.to(spaceshipShadowRef.current, {
+          x: xMove * -30,
+          y: yMove * -30 + 30, // Base offset down
+          scale: 1 + Math.abs(xMove) * 0.1, // Grows slightly when tilted
+          force3D: true,
+          duration: 0.7,
           ease: "power2.out",
         });
       }
@@ -407,11 +423,16 @@ export default function ScrolltellingCanvas() {
 
           {/* SPACESHIP REVEAL LAYER */}
           <div className="absolute inset-0 z-30 pointer-events-none flex items-center justify-center p-8">
+            {/* The Hardware-Accelerated Shadow Element */}
+            <div 
+              ref={spaceshipShadowRef}
+              className="absolute w-[300px] h-[300px] bg-black/20 blur-3xl rounded-full opacity-0 will-change-transform"
+            />
             <img 
               ref={spaceshipRef}
               src="/images/spaceship.png" 
               alt="Nuturn Spaceship" 
-              className="max-w-lg w-full h-auto"
+              className="max-w-lg w-full h-auto will-change-transform"
             />
           </div>
 
