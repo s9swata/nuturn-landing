@@ -129,7 +129,6 @@ For EVERY task:
 - Ignoring design system constraints
 - Overwriting large parts of the codebase without reason
 - Making assumptions without validation
-- Strictly for antigravity agent - do not use the browser-subagent tool
 
 ---
 

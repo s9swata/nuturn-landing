@@ -3,11 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
+import ProofGrid from "./scrolltelling/ProofGrid";
 
 gsap.registerPlugin(ScrollToPlugin);
 
 const TOTAL_FRAMES = 240;
-const ANIMATION_FRAMES = 180; // Only animate through the first 180 frames for this test
+const ANIMATION_FRAMES = 240; // Expand to 240 to reach Phase 2 sections
 const ZOOM_FACTOR = 1.05; // Slight zoom to hide edges
 
 export default function ScrolltellingCanvas() {
@@ -30,6 +31,8 @@ export default function ScrolltellingCanvas() {
   const [loadedFrames, setLoadedFrames] = useState(0);
   const [images, setImages] = useState<HTMLImageElement[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [activeFrame, setActiveFrame] = useState(0);
+  const [activeProgress, setActiveProgress] = useState(0);
 
   // 1. Preload Images
   useEffect(() => {
@@ -120,11 +123,12 @@ export default function ScrolltellingCanvas() {
       }
       console.log(`Current Frame: ${frameIndex}`);
 
-      if (frameIndex !== currentFrameIndex) {
-        currentFrameIndex = frameIndex;
-        cancelAnimationFrame(animationFrameId);
-        animationFrameId = requestAnimationFrame(() => drawFrame(frameIndex));
-      }
+      if (frameIndex === currentFrameIndex) return;
+      currentFrameIndex = frameIndex;
+      setActiveFrame(frameIndex);
+      setActiveProgress(scrollFraction);
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = requestAnimationFrame(() => drawFrame(frameIndex));
 
       // 3.2 Dynamic Zoom-In for Text Overlays
       const uniformScale = 1 + scrollFraction * 5;
@@ -534,7 +538,15 @@ export default function ScrolltellingCanvas() {
                  <p className="text-sm leading-relaxed font-sans text-black/80">Bringing traditional local leaders to the forefront of the global digital stage.</p>
                </div>
             </div>
+
+            {/* MODULAR SECTIONS - Integrated within the white portal flow */}
+            <div className="w-full mt-24 z-[30]">
+               <ProofGrid frameIndex={activeFrame} scrollFraction={activeProgress} />
+            </div>
           </div>
+
+          {/* MODULAR SECTIONS - Added here to scroll with the portal */}
+             <ProofGrid frameIndex={activeFrame} scrollFraction={activeProgress} />
 
           {/* ABSOLUTE CENTER TEXT (Inside the window visually) */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none">
