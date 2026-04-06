@@ -217,32 +217,33 @@ export default function ScrolltellingCanvas() {
         let spaceshipScale = 1;
 
         if (frameIndex >= 114) {
-          // Phase A & B: Entrance (114-155)
-          if (frameIndex < 155) {
-            const p = Math.min(1, (frameIndex - 114) / (155 - 114));
+          // Phase A: Entrance (114-135)
+          if (frameIndex < 135) {
+            const p = (frameIndex - 114) / 21;
             const easedP = 1 - Math.pow(1 - p, 3); // Cubic Out
             spaceshipY = 80 - (80 * easedP);
             spaceshipOpacity = p;
-            spaceshipScale = 1;
+            spaceshipScale = 1.5; // New base scale
           } 
-          // Phase C: The Flyby (155-185)
-          else if (frameIndex < 185) {
-            const p = (frameIndex - 155) / 30;
-            spaceshipY = p * -120; // Flies up out of frame
-            spaceshipScale = 1 + (p * 2); // Max scale 3x
+          // Phase B: The Zoom Flyby (135-145)
+          // Scales up to feel like it's passing, but stays centered
+          else if (frameIndex < 145) {
+            const p = (frameIndex - 135) / 10;
+            spaceshipY = 0; // Stays center
+            spaceshipScale = 1.5 + (p * 2); // Scales up to 3.5x
             spaceshipOpacity = 1;
           }
-          // Phase D: The Return (185-215)
-          else if (frameIndex < 215) {
-            const p = (frameIndex - 185) / 30;
-            spaceshipY = -120 * (1 - p); // Returns from top
-            spaceshipScale = 3 - (p * 2); // Scales back from 3x to 1x
+          // Phase C: Scaling Down & Settlement (145-185)
+          else if (frameIndex < 185) {
+            const p = (frameIndex - 145) / 40;
+            spaceshipY = 0; // Stays center
+            spaceshipScale = 3.5 - (p * 2); // Scales back to 1.5
             spaceshipOpacity = 1;
           }
           // Settled State
           else {
             spaceshipY = 0;
-            spaceshipScale = 1;
+            spaceshipScale = 1.5;
             spaceshipOpacity = 1;
           }
         }
@@ -261,24 +262,19 @@ export default function ScrolltellingCanvas() {
         let ctaY = 0;
 
         if (frameIndex >= 114) {
-          // Entry (114-135)
-          if (frameIndex < 135) {
-            const p = (frameIndex - 114) / 21;
+          // Entry & Hold (114-145)
+          if (frameIndex < 145) {
+            const p = Math.min(1, (frameIndex - 114) / 21);
             ctaOpacity = p;
             ctaY = 0;
           }
-          // Hold (135-155)
-          else if (frameIndex < 155) {
-            ctaOpacity = 1;
-            ctaY = 0;
-          }
-          // Flyby Displacement (155-185)
-          else if (frameIndex < 185) {
-            const p = (frameIndex - 155) / 30;
+          // Exit on Zoom Down (145-175)
+          else if (frameIndex < 175) {
+            const p = (frameIndex - 145) / 30;
             ctaOpacity = 1 - p;
             ctaY = p * 150; // Pushed down
           }
-          // Settlement (185+)
+          // Settlement (175+)
           else {
             ctaOpacity = 0;
           }
