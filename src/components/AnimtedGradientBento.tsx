@@ -57,9 +57,9 @@ export const WhatWeOffer: React.FC = () => {
         offset: ["start end", "end start"]
     })
 
-    // Map vertical scroll (0 to 1) to horizontal movement (0 to -1800px)
-    // We use a spring for smoother motion
-    const xRange = useTransform(scrollYProgress, [0.2, 0.8], [0, -1800])
+    // Map vertical scroll (0 to 1) to horizontal movement (0 to -2400px)
+    // Stiffness 100, damping 30 for smooth, non-jarring motion
+    const xRange = useTransform(scrollYProgress, [0.3, 0.9], [0, -2400])
     const x = useSpring(xRange, { stiffness: 100, damping: 30, restDelta: 0.001 })
 
     const services = [
@@ -72,31 +72,33 @@ export const WhatWeOffer: React.FC = () => {
     ]
 
     return (
-        <section ref={sectionRef} className="w-full py-32 bg-white overflow-hidden">
-            <div className="px-8 md:px-20 mb-16">
-                <h2 className="text-[10px] font-expanded-medium uppercase tracking-[0.5em] text-black/20 mb-4">
-                    Capabilities
-                </h2>
-                <h3 className="text-6xl md:text-8xl font-expanded-bold tracking-tighter text-black uppercase leading-[0.9]">
-                    What We <br /> <span className="text-black/10">Offer</span>
-                </h3>
-            </div>
+        <section ref={sectionRef} className="w-full min-h-[250vh] bg-white overflow-hidden">
+            <div className="sticky top-0 py-32">
+                <div className="px-8 md:px-20 mb-16">
+                    <h2 className="text-[10px] font-expanded-medium uppercase tracking-[0.5em] text-black/20 mb-4">
+                        Capabilities
+                    </h2>
+                    <h3 className="text-6xl md:text-8xl font-expanded-bold tracking-tighter text-black uppercase leading-[0.9]">
+                        What We <br /> <span className="text-black/10">Offer</span>
+                    </h3>
+                </div>
 
-            <div className="relative">
-                <motion.div 
-                    style={{ x }}
-                    className="flex gap-8 px-8 md:px-20 w-max"
-                >
-                    {services.map((service, index) => (
-                        <BentoCard 
-                            key={index}
-                            title={service.title}
-                            subtitle={service.subtitle}
-                            description={service.description}
-                            buttonText="Learn More"
-                        />
-                    ))}
-                </motion.div>
+                <div className="relative">
+                    <motion.div 
+                        style={{ x }}
+                        className="flex gap-8 px-8 md:px-20 w-max"
+                    >
+                        {services.map((service, index) => (
+                            <BentoCard 
+                                key={index}
+                                title={service.title}
+                                subtitle={service.subtitle}
+                                description={service.description}
+                                buttonText="Learn More"
+                            />
+                        ))}
+                    </motion.div>
+                </div>
             </div>
         </section>
     )
