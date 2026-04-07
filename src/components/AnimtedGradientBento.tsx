@@ -1,8 +1,9 @@
 "use client"
 
-import React, { useRef } from "react"
-import { motion, useScroll, useTransform, useSpring } from "framer-motion"
+import React, { useRef, useEffect, useState, useCallback } from "react"
+import { motion, useSpring } from "framer-motion"
 import AnimatedGradient from "@/components/fancy/background/animated-gradient-with-svg"
+import { useLenis } from "lenis/react"
 
 interface BentoCardProps {
     title: string
@@ -52,16 +53,15 @@ const BentoCard: React.FC<BentoCardProps> = ({
 
 export const WhatWeOffer: React.FC = () => {
     const sectionRef = useRef<HTMLDivElement>(null)
-    const { scrollYProgress } = useScroll({
-        target: sectionRef,
-        offset: ["start end", "end start"]
-    })
-
-    // Map vertical scroll (0 to 1) to horizontal movement (0 to -2400px)
-    // Stiffness 100, damping 30 for smooth, non-jarring motion
-    const xRange = useTransform(scrollYProgress, [0.3, 0.9], [0, -2400])
-    const x = useSpring(xRange, { stiffness: 100, damping: 30, restDelta: 0.001 })
-
+    const cardsContainerRef = useRef<HTMLDivElement>(null)
+    const cardRefs = useRef<(HTMLDivElement | null)[]>([])
+    const lenis = useLenis()
+    
+    const [activeCardIndex, setActiveCardIndex] = useState(0)
+    const [xPos, setXPos] = useState(0)
+    const [isInSection, setIsInSection] = useState(false)
+    const [canScrollDown, setCanScrollDown] = useState(false)
+    
     const services = [
         { title: "Web Development", subtitle: "Modern Frameworks", description: "High-performance, cinematic web experiences built with Next.js and GSAP." },
         { title: "Mobile Apps", subtitle: "iOS & Android", description: "Native-feeling cross-platform applications that don't compromise on design." },
@@ -71,10 +71,115 @@ export const WhatWeOffer: React.FC = () => {
         { title: "Automations", subtitle: "Efficiency First", description: "Streamline your business operations with intelligent, connected logic." },
     ]
 
+    const totalCards = services.length
+    const cardWidth = 450 + 32 // card width + gap
+
+    // Calculate which card is visible based on x position
+    const updateActiveCard = useCallback(() => {
+        const containerWidth = window.innerWidth
+        const centerX = containerWidth / 2
+        
+        // Find the card closest to the center of the viewport
+        let closestIndex = 0
+        let closestDistance = Infinity
+        
+        cardRefs.current.forEach((card, index) => {
+            if (!card) return
+            const rect = card.getBoundingClientRect()
+            const cardCenter = rect.left + rect.width / 2
+            const distance = Math.abs(cardCenter - centerX)
+            
+            if (distance < closestDistance) {
+                closestDistance = distance
+                closestIndex = index
+            }
+        })
+        
+        setActiveCardIndex(closestIndex)
+        
+        // Check if we're at the last card
+        const maxScroll = (totalCards - 1) * cardWidth
+        const isAtLastCard = xPos >= maxScroll - 50 // 50px threshold
+        setCanScrollDown(isAtLastCard)
+    }, [xPos, totalCards, cardWidth])
+
+    // Handle wheel events for scroll hijacking
+    useEffect(() => {
+        const section = sectionRef.current
+        if (!section) return
+
+        const handleWheel = (e: WheelEvent) => {
+            const rect = section.getBoundingClientRect()
+            const viewportHeight = window.innerHeight
+            
+            // Check if section is in view
+            const sectionTop = rect.top
+            const sectionBottom = rect.bottom
+            
+            // Is the section visible in the viewport?
+            const isVisible = sectionTop < viewportHeight && sectionBottom > 0
+            
+            // Is the mouse cursor inside the section horizontally?
+            const isInsideHorizontally = e.clientX >= rect.left && e.clientX <= rect.right
+            
+            // Is the section currently in view (top of section near top of viewport)?
+            const isFocused = sectionTop <= viewportHeight * 0.5 && sectionBottom >= viewportHeight * 0.3
+            
+            if (!isVisible || !isInsideHorizontally || !isFocused) {
+                setIsInSection(false)
+                return
+            }
+            
+            setIsInSection(true)
+            
+            // If we can scroll down (at last card), allow normal scroll
+            if (canScrollDown && e.deltaY > 0) {
+                setIsInSection(false)
+                return
+            }
+            
+            // If we're at the first card and trying to scroll up, allow normal scroll
+            if (xPos <= 0 && e.deltaY < 0) {
+                setIsInSection(false)
+                return
+            }
+            
+            // Prevent default and translate to horizontal scroll
+            e.preventDefault()
+            
+            const delta = e.deltaY + e.deltaX
+            const maxScroll = (totalCards - 1) * cardWidth
+            const newX = Math.max(0, Math.min(maxScroll, xPos + delta))
+            
+            setXPos(newX)
+            
+            // Small delay to let state update before checking active card
+            requestAnimationFrame(() => {
+                updateActiveCard()
+            })
+        }
+
+        window.addEventListener("wheel", handleWheel, { passive: false })
+        
+        return () => {
+            window.removeEventListener("wheel", handleWheel)
+        }
+    }, [xPos, canScrollDown, totalCards, cardWidth, updateActiveCard])
+
+    // Update active card on scroll/resize
+    useEffect(() => {
+        updateActiveCard()
+        window.addEventListener("resize", updateActiveCard)
+        return () => window.removeEventListener("resize", updateActiveCard)
+    }, [updateActiveCard])
+
+    // Smooth horizontal movement
+    const x = useSpring(-xPos, { stiffness: 150, damping: 30, restDelta: 0.001 })
+
     return (
-        <section ref={sectionRef} className="w-full min-h-[250vh] bg-white overflow-hidden">
-            <div className="sticky top-0 py-32">
-                <div className="px-8 md:px-20 mb-16">
+        <section ref={sectionRef} className="relative bg-white overflow-hidden">
+            <div className="px-8 md:px-20 py-32">
+                <div className="mb-16">
                     <h2 className="text-[10px] font-expanded-medium uppercase tracking-[0.5em] text-black/20 mb-4">
                         Capabilities
                     </h2>
@@ -85,21 +190,64 @@ export const WhatWeOffer: React.FC = () => {
 
                 <div className="relative">
                     <motion.div 
+                        ref={cardsContainerRef}
                         style={{ x }}
                         className="flex gap-8 px-8 md:px-20 w-max"
                     >
                         {services.map((service, index) => (
-                            <BentoCard 
+                            <div 
                                 key={index}
-                                title={service.title}
-                                subtitle={service.subtitle}
-                                description={service.description}
-                                buttonText="Learn More"
-                            />
+                                ref={(el) => { cardRefs.current[index] = el }}
+                            >
+                                <BentoCard 
+                                    title={service.title}
+                                    subtitle={service.subtitle}
+                                    description={service.description}
+                                    buttonText="Learn More"
+                                />
+                            </div>
                         ))}
                     </motion.div>
                 </div>
+                
+                {/* Card Progress Indicator */}
+                <div className="flex gap-2 px-8 md:px-20 mt-12">
+                    {services.map((_, index) => (
+                        <div 
+                            key={index}
+                            className={`h-1 rounded-full transition-all duration-300 ${
+                                index === activeCardIndex 
+                                    ? "w-12 bg-orange-500" 
+                                    : index < activeCardIndex 
+                                        ? "w-4 bg-orange-500/30" 
+                                        : "w-4 bg-black/10"
+                            }`}
+                        />
+                    ))}
+                </div>
+                
+                {/* Scroll Hint */}
+                {!canScrollDown && isInSection && (
+                    <div className="absolute bottom-8 right-8 md:right-20 flex items-center gap-2 text-black/30 text-xs font-roc uppercase tracking-widest">
+                        <span>Scroll to explore</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </div>
+                )}
+                
+                {canScrollDown && (
+                    <div className="absolute bottom-8 right-8 md:right-20 flex items-center gap-2 text-black/30 text-xs font-roc uppercase tracking-widest animate-pulse">
+                        <span>Continue scrolling</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M12 5v14M5 12l7 7 7-7"/>
+                        </svg>
+                    </div>
+                )}
             </div>
+            
+            {/* Spacer to ensure section has enough height */}
+            <div className="h-[50vh]" />
         </section>
     )
 }
