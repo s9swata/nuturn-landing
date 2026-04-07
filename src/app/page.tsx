@@ -6,7 +6,7 @@ import ScrolltellingCanvas from "@/components/ScrolltellingCanvas";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import { Squiggle } from "@/components/Squiggle";
-import { WhatWeOffer } from "@/components/AnimtedGradientBento";
+import GooeyTabs from "@/components/GoeeyTabs";
 
 export default function Home() {
   const [introDone, setIntroDone] = useState(false);
@@ -48,7 +48,7 @@ export default function Home() {
   // Initialize squiggle path to fully hidden on mount (before first scroll event)
   useEffect(() => {
     if (!introDone) return;
-    
+
     // Use two frames: one for path calc, one for revealing opacity
     const raf = requestAnimationFrame(() => {
       const svg = squiggleRef.current;
@@ -56,17 +56,17 @@ export default function Home() {
       const path = svg.querySelector("path") as SVGPathElement | null;
       if (!path) return;
       const pathLength = path.getTotalLength();
-      
+
       // 1. Prepare the path (hidden by offset)
       path.style.strokeDasharray = `${pathLength}`;
       path.style.strokeDashoffset = `${pathLength}`;
-      
+
       // 2. Reveal the SVG in the next frame once prep is done
       requestAnimationFrame(() => {
         svg.classList.replace("opacity-0", "opacity-100");
       });
     });
-    
+
     return () => cancelAnimationFrame(raf);
   }, [introDone]);
 
@@ -92,7 +92,7 @@ export default function Home() {
             <Hero />
 
             {/* What We Offer Section */}
-            <WhatWeOffer />
+            <GooeyTabs />
           </main>
           <Squiggle ref={squiggleRef} />
         </>
