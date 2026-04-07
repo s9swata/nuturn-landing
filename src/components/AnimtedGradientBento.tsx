@@ -1,8 +1,9 @@
 "use client"
 
-import React, { useRef } from "react"
+import React, { useRef, useEffect, useState } from "react"
 import { motion, useScroll, useTransform, useSpring } from "framer-motion"
 import AnimatedGradient from "@/components/fancy/background/animated-gradient-with-svg"
+import { useLenis } from "lenis/react"
 
 interface BentoCardProps {
     title: string
@@ -21,7 +22,7 @@ const BentoCard: React.FC<BentoCardProps> = ({
     buttonText,
     align = "left",
 }) => (
-    <div className="relative overflow-hidden rounded-3xl min-h-[400px] w-[450px] flex flex-col justify-between p-10 font-medium shrink-0 shadow-2xl shadow-orange-500/10">
+    <div className="relative overflow-hidden rounded-3xl min-h-[450px] w-[500px] flex flex-col justify-between p-12 font-medium shrink-0 shadow-2xl shadow-orange-500/10">
         <span className="absolute inset-0 z-0 pointer-events-none bg-[#ff592f]">
             <AnimatedGradient colors={gradientColors} speed={15} blur="heavy" />
         </span>
@@ -29,20 +30,20 @@ const BentoCard: React.FC<BentoCardProps> = ({
             className={`relative z-10 flex-1 ${align === "center" ? "items-center text-center" : "items-start text-left"} flex flex-col justify-between w-full h-full`}
         >
             <div>
-                <div className="text-white text-3xl font-expanded-bold tracking-tight mb-2">
+                <div className="text-white text-4xl font-expanded-bold tracking-tight mb-3 uppercase leading-none">
                     {title}
                 </div>
                 {subtitle && (
-                    <div className="text-white/70 text-sm font-roc tracking-[0.2em] uppercase">
+                    <div className="text-white/70 text-sm font-roc tracking-[0.3em] uppercase">
                         {subtitle}
                     </div>
                 )}
             </div>
             {description && (
-                <div className="text-white text-base font-roc mt-auto mb-6 text-pretty leading-relaxed opacity-90">{description}</div>
+                <div className="text-white text-lg font-roc mt-auto mb-8 text-pretty leading-relaxed opacity-90">{description}</div>
             )}
             {buttonText && (
-                <button className="mt-4 px-8 py-3 rounded-full border border-white/20 bg-white/10 backdrop-blur-md text-white text-[10px] font-expanded-medium tracking-[0.3em] uppercase transition-all hover:bg-white hover:text-orange-600 cursor-pointer">
+                <button className="mt-4 px-10 py-4 rounded-full border border-white/20 bg-white/10 backdrop-blur-md text-white text-[10px] font-expanded-medium tracking-[0.4em] uppercase transition-all hover:bg-white hover:text-orange-600 cursor-pointer">
                     {buttonText}
                 </button>
             )}
@@ -52,15 +53,70 @@ const BentoCard: React.FC<BentoCardProps> = ({
 
 export const WhatWeOffer: React.FC = () => {
     const sectionRef = useRef<HTMLDivElement>(null)
-    const { scrollYProgress } = useScroll({
-        target: sectionRef,
-        offset: ["start end", "end start"]
-    })
+    const containerRef = useRef<HTMLDivElement>(null)
+    const lenis = useLenis()
+    
+    // Total horizontal scroll distance
+    const [maxScroll, setMaxScroll] = useState(0)
+    // Current horizontal scroll position
+    const [xPos, setXPos] = useState(0)
 
-    // Map vertical scroll (0 to 1) to horizontal movement (0 to -1800px)
-    // We use a spring for smoother motion
-    const xRange = useTransform(scrollYProgress, [0.2, 0.8], [0, -1800])
-    const x = useSpring(xRange, { stiffness: 100, damping: 30, restDelta: 0.001 })
+    useEffect(() => {
+        if (!containerRef.current) return
+        // Calculate max scroll based on content width minus viewport width
+        const updateMaxScroll = () => {
+            const width = containerRef.current?.scrollWidth || 0
+            setMaxScroll(width - window.innerWidth + 160) // Adding padding offset
+        }
+        updateMaxScroll()
+        window.addEventListener("resize", updateMaxScroll)
+        return () => window.removeEventListener("resize", updateMaxScroll)
+    }, [])
+
+    useEffect(() => {
+        const section = sectionRef.current
+        if (!section || !lenis) return
+
+        const handleWheel = (e: WheelEvent) => {
+            // Check if mouse is within the section bounds
+            const rect = section.getBoundingClientRect()
+            const isInside = (
+                e.clientX >= rect.left && 
+                e.clientX <= rect.right && 
+                e.clientY >= rect.top && 
+                e.clientY <= rect.bottom
+            )
+
+            if (!isInside) return
+
+            // Calculate new X position
+            const delta = e.deltaY || e.deltaX
+            const nextX = Math.max(0, Math.min(maxScroll, xPos + delta))
+
+            // Logic for locking/unlocking Y scroll
+            const isAtStart = xPos === 0 && delta < 0
+            const isAtEnd = xPos === maxScroll && delta > 0
+
+            if (!isAtStart && !isAtEnd) {
+                // Prevent vertical scroll and move horizontally
+                e.preventDefault()
+                setXPos(nextX)
+                lenis.stop() // Lock main scroll
+            } else {
+                lenis.start() // Release main scroll
+            }
+        }
+
+        // Add non-passive listener to allow preventDefault
+        window.addEventListener("wheel", handleWheel, { passive: false })
+        return () => {
+            window.removeEventListener("wheel", handleWheel)
+            lenis.start() // Ensure scroll is released on unmount
+        }
+    }, [lenis, xPos, maxScroll])
+
+    // Smooth movement for the horizontal container
+    const x = useSpring(xPos * -1, { stiffness: 150, damping: 40, restDelta: 0.001 })
 
     const services = [
         { title: "Web Development", subtitle: "Modern Frameworks", description: "High-performance, cinematic web experiences built with Next.js and GSAP." },
@@ -72,20 +128,21 @@ export const WhatWeOffer: React.FC = () => {
     ]
 
     return (
-        <section ref={sectionRef} className="w-full py-32 bg-white overflow-hidden">
-            <div className="px-8 md:px-20 mb-16">
-                <h2 className="text-[10px] font-expanded-medium uppercase tracking-[0.5em] text-black/20 mb-4">
+        <section ref={sectionRef} className="w-full py-40 bg-white overflow-hidden selection:bg-orange-500/20">
+            <div className="px-8 md:px-20 mb-20">
+                <h2 className="text-[10px] font-expanded-medium uppercase tracking-[0.6em] text-black/20 mb-6">
                     Capabilities
                 </h2>
-                <h3 className="text-6xl md:text-8xl font-expanded-bold tracking-tighter text-black uppercase leading-[0.9]">
-                    What We <br /> <span className="text-black/10">Offer</span>
+                <h3 className="text-7xl md:text-9xl font-expanded-bold tracking-tighter text-black uppercase leading-[0.8]">
+                    What We <br /> <span className="text-black/5">Offer</span>
                 </h3>
             </div>
 
             <div className="relative">
                 <motion.div 
+                    ref={containerRef}
                     style={{ x }}
-                    className="flex gap-8 px-8 md:px-20 w-max"
+                    className="flex gap-12 px-8 md:px-20 w-max"
                 >
                     {services.map((service, index) => (
                         <BentoCard 
