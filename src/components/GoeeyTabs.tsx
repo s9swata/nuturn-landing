@@ -49,7 +49,6 @@ const SECTION_HEADING = {
 
 export default function GooeyTabs() {
   const [activeTab, setActiveTab] = useState(0)
-  const [isGooeyEnabled, setIsGooeyEnabled] = useState(true)
 
   return (
     <div className="relative z-100 w-dvw h-dvh flex flex-col items-center justify-center p-8 font-calendas md:text-base text-xs sm:text-sm">
@@ -90,7 +89,7 @@ export default function GooeyTabs() {
             ))}
           </div>
           {/* Content panel */}
-          <div className="w-full h-[200px] sm:h-[250px] md:h-[300px] bg-[#efefef] overflow-hidden text-muted-foreground">
+          <div className="w-full h-[200px] sm:h-[250px] md:h-[300px] bg-[#efefef] overflow-hidden text-muted-foreground text-xl">
             <AnimatePresence mode="popLayout">
               <motion.div
                 key={activeTab}

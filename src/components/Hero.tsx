@@ -1,5 +1,6 @@
 import HeroText from "./HeroText"
 import HeroVideo from "./HeroVideo"
+import GooeyTabs from "./GoeeyTabs"
 
 const Hero = () => {
     return (
@@ -7,6 +8,7 @@ const Hero = () => {
             <section className="flex flex-col relative z-10">
                 <HeroText />
                 <HeroVideo />
+                <GooeyTabs />
             </section>
         </>
     )
