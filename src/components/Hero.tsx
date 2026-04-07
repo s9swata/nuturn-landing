@@ -4,7 +4,7 @@ import HeroVideo from "./HeroVideo"
 const Hero = () => {
     return (
         <>
-            <section className="min-h-screen flex flex-col relative z-10">
+            <section className="flex flex-col relative z-10">
                 <HeroText />
                 <HeroVideo />
             </section>
