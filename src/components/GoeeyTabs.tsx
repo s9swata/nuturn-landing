@@ -7,53 +7,67 @@ const TAB_CONTENT = [
   {
     title: "Web Development",
     files: [
-      "learning-to-meditate.md",
-      "spring-garden-plans.md",
-      "travel-wishlist.md",
-      "new-coding-projects.md",
+      "Next.js & React Applications",
+      "GSAP Scroll Animations",
+      "Responsive UI Design",
+      "Performance Optimization",
     ],
   },
   {
     title: "Mobile Apps",
     files: [
-      "year-in-review.md",
-      "marathon-training-log.md",
-      "recipe-collection.md",
-      "book-reflections.md",
+      "React Native Development",
+      "iOS & Android Deployment",
+      "Cross-Platform Solutions",
+      "App Store Optimization",
     ],
   },
   {
     title: "Ecommerce",
     files: [
-      "moving-to-a-new-city.md",
-      "starting-a-blog.md",
-      "photography-basics.md",
-      "first-coding-project.md",
+      "Shopify Plus Development",
+      "Custom Checkout Flows",
+      "Payment Integration",
+      "Inventory Management",
     ],
   },
   {
     title: "Backend & APIs",
     files: [
-      "goals-and-aspirations.md",
-      "daily-gratitude.md",
-      "learning-to-cook.md",
-      "remote-work-journal.md",
+      "Node.js & Python APIs",
+      "Cloud Infrastructure",
+      "Database Architecture",
+      "Scalable Systems",
     ],
   },
 ]
+
+const SECTION_HEADING = {
+  label: "Capabilities",
+  title: "What We Offer",
+}
 
 export default function GooeyTabs() {
   const [activeTab, setActiveTab] = useState(0)
   const [isGooeyEnabled, setIsGooeyEnabled] = useState(true)
 
   return (
-    <div className="relative z-100 w-dvw h-dvh flex justify-center p-8 font-calendas md:text-base text-xs sm:text-sm">
+    <div className="relative z-100 w-dvw h-dvh flex flex-col items-center justify-center p-8 font-calendas md:text-base text-xs sm:text-sm">
       <GooeySvgFilter
         id="gooey-filter"
         strength={15}
       />
 
-      <div className="w-11/12 md:w-4/5 relative mt-24">
+      <div className="mb-12 text-center">
+        <p className="text-[10px] uppercase tracking-[0.6em] text-muted-foreground mb-2">
+          {SECTION_HEADING.label}
+        </p>
+        <h2 className="text-4xl md:text-6xl font-bold uppercase tracking-tight">
+          {SECTION_HEADING.title}
+        </h2>
+      </div>
+
+      <div className="w-11/12 md:w-4/5 relative">
         <div
           className="absolute inset-0"
           style={{ filter: "url(#gooey-filter)" }}
