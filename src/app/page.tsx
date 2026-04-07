@@ -6,6 +6,7 @@ import ScrolltellingCanvas from "@/components/ScrolltellingCanvas";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import { Squiggle } from "@/components/Squiggle";
+import { WhatWeOffer } from "@/components/AnimtedGradientBento";
 
 export default function Home() {
   const [introDone, setIntroDone] = useState(false);
@@ -89,6 +90,9 @@ export default function Home() {
 
             {/* New Hero Section */}
             <Hero />
+
+            {/* What We Offer Section */}
+            <WhatWeOffer />
           </main>
           <Squiggle ref={squiggleRef} />
         </>
