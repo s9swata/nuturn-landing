@@ -3,7 +3,6 @@
 import React, { useRef, useEffect, useState, useCallback } from "react"
 import { motion, useSpring } from "framer-motion"
 import AnimatedGradient from "@/components/fancy/background/animated-gradient-with-svg"
-import { useLenis } from "lenis/react"
 
 interface BentoCardProps {
     title: string
@@ -55,12 +54,12 @@ export const WhatWeOffer: React.FC = () => {
     const sectionRef = useRef<HTMLDivElement>(null)
     const cardsContainerRef = useRef<HTMLDivElement>(null)
     const cardRefs = useRef<(HTMLDivElement | null)[]>([])
-    const lenis = useLenis()
+    const scrollContainerRef = useRef<HTMLDivElement>(null)
+    const isScrollingRef = useRef(false)
     
     const [activeCardIndex, setActiveCardIndex] = useState(0)
     const [xPos, setXPos] = useState(0)
-    const [isInSection, setIsInSection] = useState(false)
-    const [canScrollDown, setCanScrollDown] = useState(false)
+    const [isOverSection, setIsOverSection] = useState(false)
     
     const services = [
         { title: "Web Development", subtitle: "Modern Frameworks", description: "High-performance, cinematic web experiences built with Next.js and GSAP." },
@@ -72,14 +71,12 @@ export const WhatWeOffer: React.FC = () => {
     ]
 
     const totalCards = services.length
-    const cardWidth = 450 + 32 // card width + gap
+    const cardWidth = 482 // 450px + 32px gap
+    const maxScroll = (totalCards - 1) * cardWidth
 
-    // Calculate which card is visible based on x position
+    // Calculate active card
     const updateActiveCard = useCallback(() => {
-        const containerWidth = window.innerWidth
-        const centerX = containerWidth / 2
-        
-        // Find the card closest to the center of the viewport
+        const centerX = window.innerWidth / 2
         let closestIndex = 0
         let closestDistance = Infinity
         
@@ -96,89 +93,73 @@ export const WhatWeOffer: React.FC = () => {
         })
         
         setActiveCardIndex(closestIndex)
-        
-        // Check if we're at the last card
-        const maxScroll = (totalCards - 1) * cardWidth
-        const isAtLastCard = xPos >= maxScroll - 50 // 50px threshold
-        setCanScrollDown(isAtLastCard)
-    }, [xPos, totalCards, cardWidth])
+    }, [])
 
-    // Handle wheel events for scroll hijacking
+    // Direct DOM manipulation for immediate scroll response
+    const updateScroll = useCallback((newX: number) => {
+        const clampedX = Math.max(0, Math.min(maxScroll, newX))
+        setXPos(clampedX)
+        
+        if (cardsContainerRef.current) {
+            cardsContainerRef.current.style.transform = `translateX(-${clampedX}px)`
+        }
+    }, [maxScroll])
+
+    // Wheel event handler on the scroll container
+    useEffect(() => {
+        const container = scrollContainerRef.current
+        if (!container) return
+
+        const handleWheel = (e: WheelEvent) => {
+            // Only hijack if we're over this section
+            if (!isOverSection) return
+            
+            e.preventDefault()
+            
+            const delta = e.deltaY || e.deltaX
+            updateScroll(xPos + delta)
+            
+            requestAnimationFrame(updateActiveCard)
+        }
+
+        // Use capture phase to catch events early
+        container.addEventListener("wheel", handleWheel, { passive: false })
+        
+        return () => {
+            container.removeEventListener("wheel", handleWheel)
+        }
+    }, [xPos, isOverSection, updateScroll, updateActiveCard])
+
+    // Track mouse position to know when we're over the section
     useEffect(() => {
         const section = sectionRef.current
         if (!section) return
 
-        const handleWheel = (e: WheelEvent) => {
-            const rect = section.getBoundingClientRect()
-            const viewportHeight = window.innerHeight
-            
-            // Check if section is in view
-            const sectionTop = rect.top
-            const sectionBottom = rect.bottom
-            
-            // Is the section visible in the viewport?
-            const isVisible = sectionTop < viewportHeight && sectionBottom > 0
-            
-            // Is the mouse cursor inside the section horizontally?
-            const isInsideHorizontally = e.clientX >= rect.left && e.clientX <= rect.right
-            
-            // Is the section currently in view (top of section near top of viewport)?
-            const isFocused = sectionTop <= viewportHeight * 0.5 && sectionBottom >= viewportHeight * 0.3
-            
-            if (!isVisible || !isInsideHorizontally || !isFocused) {
-                setIsInSection(false)
-                return
-            }
-            
-            setIsInSection(true)
-            
-            // If we can scroll down (at last card), allow normal scroll
-            if (canScrollDown && e.deltaY > 0) {
-                setIsInSection(false)
-                return
-            }
-            
-            // If we're at the first card and trying to scroll up, allow normal scroll
-            if (xPos <= 0 && e.deltaY < 0) {
-                setIsInSection(false)
-                return
-            }
-            
-            // Prevent default and translate to horizontal scroll
-            e.preventDefault()
-            
-            const delta = e.deltaY + e.deltaX
-            const maxScroll = (totalCards - 1) * cardWidth
-            const newX = Math.max(0, Math.min(maxScroll, xPos + delta))
-            
-            setXPos(newX)
-            
-            // Small delay to let state update before checking active card
-            requestAnimationFrame(() => {
-                updateActiveCard()
-            })
-        }
+        const handleMouseEnter = () => setIsOverSection(true)
+        const handleMouseLeave = () => setIsOverSection(false)
 
-        window.addEventListener("wheel", handleWheel, { passive: false })
-        
+        section.addEventListener("mouseenter", handleMouseEnter)
+        section.addEventListener("mouseleave", handleMouseLeave)
+
         return () => {
-            window.removeEventListener("wheel", handleWheel)
+            section.removeEventListener("mouseenter", handleMouseEnter)
+            section.removeEventListener("mouseleave", handleMouseLeave)
         }
-    }, [xPos, canScrollDown, totalCards, cardWidth, updateActiveCard])
+    }, [])
 
-    // Update active card on scroll/resize
+    // Update active card on mount and resize
     useEffect(() => {
         updateActiveCard()
         window.addEventListener("resize", updateActiveCard)
         return () => window.removeEventListener("resize", updateActiveCard)
     }, [updateActiveCard])
 
-    // Smooth horizontal movement
-    const x = useSpring(-xPos, { stiffness: 150, damping: 30, restDelta: 0.001 })
+    // Check if at last card to allow vertical scroll
+    const isAtLastCard = xPos >= maxScroll - 20
 
     return (
         <section ref={sectionRef} className="relative bg-white overflow-hidden">
-            <div className="px-8 md:px-20 py-32">
+            <div ref={scrollContainerRef} className="px-8 md:px-20 py-32">
                 <div className="mb-16">
                     <h2 className="text-[10px] font-expanded-medium uppercase tracking-[0.5em] text-black/20 mb-4">
                         Capabilities
@@ -188,11 +169,11 @@ export const WhatWeOffer: React.FC = () => {
                     </h3>
                 </div>
 
-                <div className="relative">
-                    <motion.div 
+                <div className="relative overflow-visible">
+                    <div 
                         ref={cardsContainerRef}
-                        style={{ x }}
-                        className="flex gap-8 px-8 md:px-20 w-max"
+                        className="flex gap-8 px-8 md:px-20 w-max transition-transform duration-100"
+                        style={{ transform: `translateX(-${xPos}px)` }}
                     >
                         {services.map((service, index) => (
                             <div 
@@ -207,7 +188,7 @@ export const WhatWeOffer: React.FC = () => {
                                 />
                             </div>
                         ))}
-                    </motion.div>
+                    </div>
                 </div>
                 
                 {/* Card Progress Indicator */}
@@ -227,7 +208,7 @@ export const WhatWeOffer: React.FC = () => {
                 </div>
                 
                 {/* Scroll Hint */}
-                {!canScrollDown && isInSection && (
+                {!isAtLastCard && isOverSection && (
                     <div className="absolute bottom-8 right-8 md:right-20 flex items-center gap-2 text-black/30 text-xs font-roc uppercase tracking-widest">
                         <span>Scroll to explore</span>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -236,17 +217,17 @@ export const WhatWeOffer: React.FC = () => {
                     </div>
                 )}
                 
-                {canScrollDown && (
-                    <div className="absolute bottom-8 right-8 md:right-20 flex items-center gap-2 text-black/30 text-xs font-roc uppercase tracking-widest animate-pulse">
+                {isAtLastCard && (
+                    <div className="absolute bottom-8 right-8 md:right-20 flex items-center gap-2 text-black/30 text-xs font-roc uppercase tracking-widest">
                         <span>Continue scrolling</span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="animate-bounce">
                             <path d="M12 5v14M5 12l7 7 7-7"/>
                         </svg>
                     </div>
                 )}
             </div>
             
-            {/* Spacer to ensure section has enough height */}
+            {/* Spacer */}
             <div className="h-[50vh]" />
         </section>
     )
