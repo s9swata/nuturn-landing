@@ -9,7 +9,7 @@ export default function HeroVideo() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 1.2, ease: [0.23, 1, 0.32, 1] }}
-      className="px-10 md:px-16 lg:px-24 pb-24 w-full grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 items-center "
+      className="px-10 md:px-16 lg:px-24 pb-8 w-full grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 items-center"
     >
       <div className="relative rounded-[1.5rem] md:rounded-[2rem] overflow-hidden aspect-1472/1056 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-black/5 group order-2 md:order-1">
         <video
