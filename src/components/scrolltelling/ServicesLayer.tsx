@@ -38,9 +38,9 @@ const PortfolioCard = ({
         />
       </div>
       <div className="space-y-1">
-        <span className="text-[10px] uppercase tracking-[0.2em] text-black/40 mb-3 font-sans">{category}</span>
-        <h3 className="text-lg md:text-xl font-bold uppercase tracking-tight" style={{ fontFamily: 'var(--font-roc)' }}>{title}</h3>
-        <p className="text-xs md:text-sm text-black/60 font-sans mt-2">{desc}</p>
+        <span className="text-[10px] uppercase tracking-[0.2em] text-black/40 mb-3 font-expanded-medium">{category}</span>
+        <h3 className="text-lg md:text-xl font-expanded-bold uppercase tracking-tight">{title}</h3>
+        <p className="text-xs md:text-sm text-black/60 font-roc mt-2">{desc}</p>
       </div>
     </div>
   );

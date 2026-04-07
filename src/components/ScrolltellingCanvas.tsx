@@ -319,21 +319,21 @@ export default function ScrolltellingCanvas({ onComplete }: ScrolltellingCanvasP
   }, [isLoaded]);
 
   return (
-    <div ref={containerRef} className="w-full h-full relative selection:bg-none font-special">
+    <div ref={containerRef} className="w-full h-full relative selection:bg-none font-roc">
       {/* FRAME DEBUGGER (FIXED TOP-RIGHT) */}
       <div
         ref={debugRef}
-        className="fixed top-4 right-4 z-999 bg-black/80 text-white font-mono text-[10px] px-2 py-1 rounded border border-white/20 pointer-events-none"
+        className="fixed top-4 right-4 z-999 bg-black/80 text-white font-roc text-[10px] px-2 py-1 rounded border border-white/20 pointer-events-none"
       >
         Frame: 0 / {ANIMATION_FRAMES}
       </div>
 
       {!isLoaded && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black">
-          <div className="text-white text-8xl font-light tracking-tighter tabular-nums mb-4">
+          <div className="text-white text-8xl font-light tracking-tighter tabular-nums mb-4 font-roc">
             {Math.floor((loadedFrames / TOTAL_FRAMES) * 100)}%
           </div>
-          <div className="text-zinc-500 text-sm tracking-widest uppercase font-sans">Loading Experience</div>
+          <div className="text-zinc-500 text-sm tracking-widest uppercase font-roc">Loading Experience</div>
         </div>
       )}
 
@@ -366,7 +366,7 @@ export default function ScrolltellingCanvas({ onComplete }: ScrolltellingCanvasP
         <div className="fixed inset-0 z-20 pointer-events-none flex flex-col justify-between p-8 md:p-12 text-white">
 
           {/* TOP NAV */}
-          <header ref={headerRef} className="flex justify-between items-start text-sm tracking-wider font-expanded pointer-events-auto">
+          <header ref={headerRef} className="flex justify-between items-start text-sm tracking-wider font-expanded-medium pointer-events-auto">
             <nav className="flex gap-8">
               <a href="#" className="hover:text-gray-300 transition-colors">About</a>
               <a href="#" className="hover:text-gray-300 transition-colors">Our Work</a>
@@ -382,7 +382,7 @@ export default function ScrolltellingCanvas({ onComplete }: ScrolltellingCanvasP
           <div className="absolute left-8 md:left-12 top-[38%] -translate-y-1/2 z-20 pointer-events-none">
             <h1
               ref={leftTextRef}
-              className="text-[5vw] leading-[0.8] tracking-tight drop-shadow-2xl font-expanded font-bold"
+              className="text-[5vw] leading-[0.8] tracking-tight drop-shadow-2xl font-expanded-bold"
             >
               Creative <br /> Solutions
             </h1>
@@ -391,7 +391,7 @@ export default function ScrolltellingCanvas({ onComplete }: ScrolltellingCanvasP
           <div className="absolute right-8 md:right-12 top-[62%] -translate-y-1/2 z-20 pointer-events-none">
             <h1
               ref={rightTextRef}
-              className="text-[5vw] leading-[0.8] tracking-tight text-right drop-shadow-2xl font-expanded font-bold"
+              className="text-[5vw] leading-[0.8] tracking-tight text-right drop-shadow-2xl font-expanded-bold"
             >
               For SaaS & <br /> Local Biz
             </h1>
@@ -400,29 +400,29 @@ export default function ScrolltellingCanvas({ onComplete }: ScrolltellingCanvasP
           {/* SPACESHIP REVEAL LAYER */}
           <div className="absolute inset-0 z-30 pointer-events-none flex flex-col items-center justify-center p-8 overflow-hidden">
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center gap-2">
-              <h2 
+              <h2
                 ref={ctaTitleRef}
-                className="text-7xl md:text-8xl font-bold tracking-tight will-change-transform leading-none uppercase text-black"
-                style={{ 
-                  fontFamily: 'var(--font-roc)',
+                className="text-7xl md:text-8xl font-black tracking-tight will-change-transform leading-none uppercase text-black"
+                style={{
+                  fontFamily: 'var(--font-expanded-bold)',
                   opacity: 0,
                 }}
               >
                 Define the Cinematic
               </h2>
-              <p 
+              <p
                 ref={ctaDescRef}
                 className="text-xl md:text-2xl font-light tracking-wide will-change-transform text-black"
-                style={{ fontFamily: 'var(--font-roc)', opacity: 0 }}
+                style={{ fontFamily: 'var(--font-roc-light)', opacity: 0 }}
               >
                 Excellence that moves with you
               </p>
             </div>
 
-            <img 
+            <img
               ref={spaceshipRef}
-              src="/images/spaceship.png" 
-              alt="Nuturn Spaceship" 
+              src="/images/spaceship.png"
+              alt="Nuturn Spaceship"
               className="max-w-lg w-full h-auto drop-shadow-2xl z-30 relative will-change-transform"
             />
           </div>
@@ -431,12 +431,12 @@ export default function ScrolltellingCanvas({ onComplete }: ScrolltellingCanvasP
           {/* Add your custom layers here to render over the white portal.
               The region from Frame 190 to 240 is now your 'Clean Slate'.
               Example: {activeFrame >= 190 && <YourComponent activeFrame={activeFrame} />} */}
-          
+
           {/* ABSOLUTE CENTER TEXT (Inside the window visually) */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none">
             <h2
               ref={centerTextRef}
-              className="text-lg md:text-xl tracking-[0.6em] text-white/90 drop-shadow-xl whitespace-nowrap font-roc font-light"
+              className="text-lg md:text-xl tracking-[0.6em] text-white/90 drop-shadow-xl whitespace-nowrap font-roc"
             >
               Nuturn Studio
             </h2>
@@ -458,7 +458,7 @@ export default function ScrolltellingCanvas({ onComplete }: ScrolltellingCanvasP
 
             {/* Bottom Center Button */}
             <div className="absolute left-1/2 bottom-0 -translate-x-1/2">
-              <button className="bg-white text-black px-8 py-3 rounded-full uppercase tracking-wider font-sans text-sm font-semibold hover:bg-gray-200 transition-colors flex items-center gap-2">
+              <button className="bg-white text-black px-8 py-3 rounded-full uppercase tracking-wider font-expanded-medium text-sm font-semibold hover:bg-gray-200 transition-colors flex items-center gap-2">
                 Start a Project
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="ml-1"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
               </button>

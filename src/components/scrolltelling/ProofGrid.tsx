@@ -33,7 +33,7 @@ export default function ProofGrid({ frameIndex, scrollFraction }: ScrollSectionP
     >
       <div className="max-w-6xl mx-auto">
         <h2 
-          className="text-xs font-bold uppercase tracking-[0.3em] text-black/30 mb-12 font-sans"
+          className="text-xs font-expanded-medium uppercase tracking-[0.3em] text-black/30 mb-12"
         >
           Impact that speaks for itself
         </h2>
@@ -41,23 +41,23 @@ export default function ProofGrid({ frameIndex, scrollFraction }: ScrollSectionP
         <div className="grid grid-cols-1 md:grid-cols-2 gap-24">
           {/* Aether Labs */}
           <div className="space-y-6">
-            <p className="text-2xl md:text-3xl font-light leading-relaxed font-sans italic border-l-2 border-black/10 pl-8">
+            <p className="text-2xl md:text-3xl font-light leading-relaxed font-roc italic border-l-2 border-black/10 pl-8">
               "Nuturn didn't just build our SaaS; they built our growth engine. User retention increased by 200% in 3 months."
             </p>
             <div className="pl-8">
-              <h4 className="font-bold uppercase tracking-tight text-sm" style={{ fontFamily: 'var(--font-roc)' }}>Aether Labs</h4>
-              <span className="text-xs text-black/40 uppercase tracking-widest font-sans">SaaS Engineering Partner</span>
+              <h4 className="font-expanded-bold uppercase tracking-tight text-sm">Aether Labs</h4>
+              <span className="text-xs text-black/40 uppercase tracking-widest font-roc">SaaS Engineering Partner</span>
             </div>
           </div>
 
           {/* City Pulse */}
           <div className="space-y-6">
-            <p className="text-2xl md:text-3xl font-light leading-relaxed font-sans italic border-l-2 border-black/10 pl-8">
+            <p className="text-2xl md:text-3xl font-light leading-relaxed font-roc italic border-l-2 border-black/10 pl-8">
               "Taking our local legacy online felt impossible until Nuturn. We're now shipping nationwide with a premium digital presence."
             </p>
             <div className="pl-8">
-              <h4 className="font-bold uppercase tracking-tight text-sm" style={{ fontFamily: 'var(--font-roc)' }}>City Pulse</h4>
-              <span className="text-xs text-black/40 uppercase tracking-widest font-sans">Business Transformation Client</span>
+              <h4 className="font-expanded-bold uppercase tracking-tight text-sm">City Pulse</h4>
+              <span className="text-xs text-black/40 uppercase tracking-widest font-roc">Business Transformation Client</span>
             </div>
           </div>
         </div>

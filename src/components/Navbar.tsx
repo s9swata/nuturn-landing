@@ -13,7 +13,7 @@ export default function Navbar() {
   return (
     <header className="fixed top-0 left-0 w-full p-8 md:p-12 z-50 flex justify-between items-start pointer-events-auto mix-blend-difference invert sm:mix-blend-normal sm:invert-0">
       {/* Nav Links */}
-      <nav className="flex gap-8 text-sm tracking-wider font-expanded text-black font-medium">
+      <nav className="flex gap-8 text-sm tracking-wider font-expanded-medium text-black font-medium">
         <a href="#" className="hover:text-black/50 transition-colors">About</a>
         <a href="#" className="hover:text-black/50 transition-colors">Our Work</a>
         <a href="#" className="hover:text-black/50 transition-colors">Services</a>
@@ -21,7 +21,7 @@ export default function Navbar() {
       </nav>
 
       {/* Email Link */}
-      <div className="hidden sm:block text-sm tracking-wider font-expanded text-black font-medium">
+      <div className="hidden sm:block text-sm tracking-wider font-expanded-medium text-black font-medium">
         <a href="mailto:hello@nuturnstudio.com" className="hover:text-black/50 transition-colors">
           hello@nuturnstudio.com
         </a>
@@ -29,10 +29,11 @@ export default function Navbar() {
 
       {/* Logo (Centered top) */}
       <div className="absolute top-8 md:top-12 left-1/2 -translate-x-1/2 text-black">
-        <h2 className="text-lg md:text-xl tracking-[0.6em] whitespace-nowrap font-roc font-light">
+        <h2 className="text-lg md:text-xl tracking-[0.6em] whitespace-nowrap font-roc">
           Nuturn Studio
         </h2>
       </div>
+
     </header>
   );
 }

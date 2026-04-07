@@ -39,12 +39,12 @@ export const VisionLayer: React.FC<VisionLayerProps> = ({ activeFrame }) => {
       style={{ opacity: visibility }}
     >
       <div className="max-w-4xl text-center space-y-6 md:space-y-8">
-        <span className="text-[10px] md:text-xs uppercase tracking-[0.5em] text-black/30 font-sans block mb-2 transition-transform duration-1000"
+        <span className="text-[10px] md:text-xs uppercase tracking-[0.5em] text-black/30 font-expanded-medium block mb-2 transition-transform duration-1000"
               style={{ transform: `translateY(${(1 - visibility) * 20}px)` }}>
           Precision Narrative
         </span>
         <h1 
-          className="text-4xl md:text-7xl font-sans font-black uppercase tracking-tighter leading-[0.9] text-black"
+          className="text-4xl md:text-7xl font-expanded-bold uppercase tracking-tighter leading-[0.9] text-black"
           style={{ transform: `translateY(${(1 - visibility) * 40}px)` }}
         >
           Architecture that <br />
@@ -53,7 +53,7 @@ export const VisionLayer: React.FC<VisionLayerProps> = ({ activeFrame }) => {
         <div className="w-12 md:w-24 h-px bg-black/10 mx-auto transform transition-all duration-1000"
               style={{ width: visibility * 96 }}></div>
         <p 
-          className="text-sm md:text-xl text-black/60 font-sans max-w-2xl mx-auto leading-relaxed"
+          className="text-sm md:text-xl text-black/60 font-roc max-w-2xl mx-auto leading-relaxed"
           style={{ transform: `translateY(${(1 - visibility) * 30}px)` }}
         >
           We transform complex business visions into cinematic digital realities. Scalable SaaS engineering meets high-end brand storytelling.

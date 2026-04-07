@@ -7,12 +7,10 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-mono);
-  --font-special: var(--font-special-gothic);
-  --font-expanded: var(--font-special-expanded);
-  --font-roc: var(--font-roc-grotesk);
-  --font-heading: var(--font-mono);
+  --font-expanded-bold: var(--font-special-bold);
+  --font-expanded-medium: var(--font-special-medium);
+  --font-roc: var(--font-roc-light);
+  --font-sans: var(--font-roc-light), sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -42,6 +40,7 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-purple: "#3946f4";
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -120,14 +119,25 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+.squiggle {
+  position: absolute;
+  top: 0;
+  left: -20rem;
+  width: 100vw;
+  height: 200vh;
+  z-index: 0;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
   html {
-    @apply font-mono;
+    @apply font-sans;
   }
 }
