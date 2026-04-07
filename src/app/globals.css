@@ -141,3 +141,15 @@
     @apply font-sans;
   }
 }
+
+@keyframes background-gradient {
+  0% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(calc(var(--tx-1) * 100%), calc(var(--ty-1) * 100%)) scale(1.2); }
+  50% { transform: translate(calc(var(--tx-2) * 100%), calc(var(--ty-2) * 100%)) scale(0.8); }
+  75% { transform: translate(calc(var(--tx-3) * 100%), calc(var(--ty-3) * 100%)) scale(1.1); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+.animate-background-gradient {
+  animation: background-gradient 10s infinite ease-in-out;
+}

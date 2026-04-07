@@ -73,22 +73,23 @@ export const WhatWeOffer: React.FC = () => {
                 </h3>
             </div>
 
-            <motion.div 
-                className="flex gap-6 px-8 md:px-12 cursor-grab active:cursor-grabbing"
-                drag="x"
-                dragConstraints={{ right: 0, left: -1400 }}
-                whileTap={{ cursor: "grabbing" }}
-            >
-                {services.map((service, index) => (
-                    <BentoCard 
-                        key={index}
-                        title={service.title}
-                        subtitle={service.subtitle}
-                        description={service.description}
-                        buttonText="Learn More"
-                    />
-                ))}
-            </motion.div>
+            <div className="overflow-x-auto no-scrollbar pb-8">
+                <motion.div 
+                    className="flex gap-6 px-8 md:px-12 w-max"
+                    drag="x"
+                    dragConstraints={{ right: 0, left: -1600 }}
+                >
+                    {services.map((service, index) => (
+                        <BentoCard 
+                            key={index}
+                            title={service.title}
+                            subtitle={service.subtitle}
+                            description={service.description}
+                            buttonText="Learn More"
+                        />
+                    ))}
+                </motion.div>
+            </div>
         </section>
     )
 }
